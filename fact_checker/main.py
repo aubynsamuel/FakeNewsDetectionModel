@@ -5,18 +5,18 @@ from typing import Dict
 import numpy as np
 from googlesearch import search
 
-from clickbait_checker import MLClickbaitDetector
+from clickbait_checker import AdvancedClickbaitDetector
 from source_credibility_analyzer import SourceCredibilityAnalyzer
 from claim_extractor import ClaimExtractor
 from network_analyzer import NetworkAnalyzer
 from temporal_analyzer import TemporalAnalyzer
-from utils import extract_domain
+from utils import extract_domain, remove_source_artifacts_fast
 
 class EnhancedFactChecker:
     """Main enhanced fact checker with ML integration"""
     
     def __init__(self):
-        self.clickbait_detector = MLClickbaitDetector()
+        self.clickbait_detector = AdvancedClickbaitDetector()
         self.source_analyzer = SourceCredibilityAnalyzer()
         self.claim_extractor = ClaimExtractor()
         self.network_analyzer = NetworkAnalyzer()
@@ -24,14 +24,15 @@ class EnhancedFactChecker:
         
         print("🚀 Enhanced ML-Powered Fact Checker Initialized")
     
-    def comprehensive_verify(self, headline: str, results_to_check: int = 10) -> Dict:
+    def comprehensive_verify(self, raw_headline: str, results_to_check: int = 10) -> Dict:
         """Comprehensive fact-checking with ML integration"""
-        print(f"\n🔍 Comprehensive Analysis: \"{headline}\"")
+        print(f"\n🔍 Comprehensive Analysis: \"{raw_headline}\"")
         print("=" * 80)
+        headline = remove_source_artifacts_fast(raw_headline)
         
         # Initialize results
         analysis_results = {
-            "headline": headline,
+            "headline": raw_headline,
             "timestamp": datetime.now().isoformat(),
             "components": {},
             "final_verdict": {},
@@ -39,10 +40,10 @@ class EnhancedFactChecker:
         
         # 1. ML-based clickbait detection
         print("🤖 ML Clickbait Analysis...")
-        clickbait_score = self.clickbait_detector.detect_clickbait_score(headline)
+        clickbait_score = self.clickbait_detector.detect_clickbait_score(raw_headline)
         analysis_results["components"]["clickbait"] = {
             "score": clickbait_score,
-            "weight": 0.15
+            "weight": 0.25
         }
         print(f"   Clickbait Score: {clickbait_score:.3f}")
         
@@ -89,7 +90,7 @@ class EnhancedFactChecker:
             else:
                 print(f"   {i+1}. {domain} ❓ ({credibility['score']:.2f})")
         
-        avg_source_credibility = np.mean(source_scores) if source_scores else 0.5
+        avg_source_credibility = np.mean(source_scores) if source_scores else 0.25
         
         # 6. Network propagation analysis
         print("🌐 Network Propagation Analysis...")
@@ -108,14 +109,14 @@ class EnhancedFactChecker:
             claim_verification_scores.append(verification["score"])
             print(f"   '{claim['text']}': {verification['score']:.3f}")
         
-        avg_claim_verification = np.mean(claim_verification_scores) if claim_verification_scores else 0.5
+        avg_claim_verification = np.mean(claim_verification_scores) if claim_verification_scores else 0.25
         
         # 8. Calculate final score with enhanced weighting
         components = {
-            "source_credibility": (avg_source_credibility, 0.30),
-            "claim_verification": (avg_claim_verification, 0.25),
+            "source_credibility": (avg_source_credibility, 0.225),
+            "claim_verification": (avg_claim_verification, 0.225),
+            "clickbait_detection": (1 - clickbait_score, 0.25),  # Invert: lower clickbait = higher credibility
             "network_propagation": (network_analysis["score"], 0.20),
-            "clickbait_detection": (1 - clickbait_score, 0.15),  # Invert: lower clickbait = higher credibility
             "temporal_consistency": (1 - temporal_analysis["score"], 0.10)  # Invert: less recycling = higher credibility
         }
         
@@ -126,13 +127,13 @@ class EnhancedFactChecker:
             "score": avg_source_credibility,
             "trusted_count": trusted_count,
             "suspicious_count": suspicious_count,
-            "weight": 0.30
+            "weight": 0.225
         }
         
         analysis_results["components"]["claim_verification"] = {
             "score": avg_claim_verification,
             "verified_claims": len(claim_verification_scores),
-            "weight": 0.25
+            "weight": 0.225
         }
         
         # 9. Generate verdict
