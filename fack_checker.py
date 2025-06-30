@@ -25,6 +25,7 @@ TRUSTED_DOMAINS = {
     "ft.com", "indiatimes.com", "japantimes.co.jp", "latimes.com",
     "npr.org", "nytimes.com", "reuters.com", "smh.com.au",
     "theguardian.com", "usatoday.com", "washingtonpost.com", "wsj.com",
+    "france24.com",
 
     # 📰 Ghana-Specific News
     "3news.com", "adomonline.com", "citinewsroom.com", "ghanaweb.com",
