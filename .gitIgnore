@@ -1,8 +1,6 @@
-# models
 .vscode
 .venv
 True.csv
 Fake.csv
 data
 fake_news_detector/__pycache__
-# fake_news_detector/models

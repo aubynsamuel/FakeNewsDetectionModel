@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Fake News Detector</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            width: 100%;
+            max-width: 800px;
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            color: #2d3748;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            color: #718096;
+            font-size: 1.1em;
+        }
+
+        .input-section {
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #2d3748;
+            font-weight: 600;
+        }
+
+        .input-group textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 16px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 120px;
+            transition: all 0.3s ease;
+        }
+
+        .input-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .analyze-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .analyze-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .analyze-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .results {
+            display: none;
+            margin-top: 30px;
+            padding: 25px;
+            border-radius: 15px;
+            border-left: 5px solid;
+        }
+
+        .results.real {
+            background: #f0fff4;
+            border-color: #48bb78;
+        }
+
+        .results.fake {
+            background: #fff5f5;
+            border-color: #f56565;
+        }
+
+        .results.maybe {
+            background: #fffbf0;
+            border-color: #ed8936;
+        }
+
+        .results.uncertain {
+            background: #f7fafc;
+            border-color: #718096;
+        }
+
+        .verdict {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .verdict-icon {
+            font-size: 2em;
+            margin-right: 15px;
+        }
+
+        .verdict-text h2 {
+            font-size: 1.5em;
+            margin-bottom: 5px;
+        }
+
+        .verdict-text p {
+            color: #718096;
+            font-size: 1em;
+        }
+
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .metric {
+            background: rgba(255, 255, 255, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .metric-label {
+            font-size: 0.9em;
+            color: #718096;
+        }
+
+        .sources {
+            margin-top: 25px;
+        }
+
+        .sources h3 {
+            margin-bottom: 15px;
+            color: #2d3748;
+        }
+
+        .source-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            margin-bottom: 8px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 8px;
+            font-size: 0.9em;
+        }
+
+        .source-status {
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+
+        .error {
+            background: #fff5f5;
+            color: #c53030;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #f56565;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .metrics {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 AI Fake News Detector</h1>
+            <p>Advanced AI analysis to verify news headlines using multiple credibility factors</p>
+        </div>
+
+        <div class="input-section">
+            <div class="input-group">
+                <label for="headline">Enter News Headline:</label>
+                <textarea id="headline"
+                    placeholder="Paste a news headline here to analyze its credibility...&#10;&#10;Example: 'Scientists discover new treatment for diabetes'"></textarea>
+            </div>
+            <button class="analyze-btn" onclick="analyzeHeadline()">
+                🚀 Analyze Headline
+            </button>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Analyzing headline with AI algorithms...<br>
+                <small>Checking trusted sources, content similarity, and language patterns</small>
+            </p>
+        </div>
+
+        <div class="results" id="results">
+            <!-- Results will be populated here -->
+        </div>
+    </div>
+
+    <script>
+        async function analyzeHeadline() {
+            const headline = document.getElementById('headline').value.trim();
+            const loadingDiv = document.getElementById('loading');
+            const resultsDiv = document.getElementById('results');
+            const analyzeBtn = document.querySelector('.analyze-btn');
+
+            if (!headline) {
+                alert('Please enter a headline to analyze');
+                return;
+            }
+
+            if (headline.length < 10) {
+                alert('Please enter a more complete headline (at least 10 characters)');
+                return;
+            }
+
+            // Show loading state
+            loadingDiv.style.display = 'block';
+            resultsDiv.style.display = 'none';
+            analyzeBtn.disabled = true;
+            analyzeBtn.textContent = '🔄 Analyzing...';
+
+            try {
+                const response = await fetch('/analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ headline: headline })
+                });
+
+                const data = await response.json();
+
+                if (data.error) {
+                    showError(data.error);
+                } else {
+                    showResults(data);
+                }
+            } catch (error) {
+                showError('Network error. Please check your connection and try again.');
+            } finally {
+                // Hide loading state
+                loadingDiv.style.display = 'none';
+                analyzeBtn.disabled = false;
+                analyzeBtn.textContent = '🚀 Analyze Headline';
+            }
+        }
+
+        function showResults(data) {
+            const resultsDiv = document.getElementById('results');
+
+            // Get verdict icon and color
+            const icons = {
+                'real': '✅',
+                'fake': '🚫',
+                'maybe': '⚠️',
+                'uncertain': '❓'
+            };
+
+            const verdictColors = {
+                'real': '#48bb78',
+                'fake': '#f56565',
+                'maybe': '#ed8936',
+                'uncertain': '#718096'
+            };
+
+            resultsDiv.className = `results ${data.verdict_class}`;
+            resultsDiv.innerHTML = `
+                <div class="verdict">
+                    <div class="verdict-icon">${icons[data.verdict_class]}</div>
+                    <div class="verdict-text">
+                        <h2 style="color: ${verdictColors[data.verdict_class]}">${data.verdict}</h2>
+                        <p>Confidence: ${data.confidence} • Score: ${data.final_score}/1.00</p>
+                    </div>
+                </div>
+
+                <div class="metrics">
+                    <div class="metric">
+                        <div class="metric-value" style="color: ${data.metrics.trusted_sources >= 2 ? '#48bb78' : '#f56565'}">
+                            ${data.metrics.trusted_sources}
+                        </div>
+                        <div class="metric-label">Trusted Sources</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" style="color: ${data.metrics.content_similarity >= 0.3 ? '#48bb78' : '#f56565'}">
+                            ${data.metrics.content_similarity}
+                        </div>
+                        <div class="metric-label">Content Match</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" style="color: ${data.metrics.sentiment_consistency >= 0.7 ? '#48bb78' : '#f56565'}">
+                            ${data.metrics.sentiment_consistency}
+                        </div>
+                        <div class="metric-label">Sentiment Match</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" style="color: ${data.metrics.suspicious_score <= 0.3 ? '#48bb78' : '#f56565'}">
+                            ${data.metrics.suspicious_score}
+                        </div>
+                        <div class="metric-label">Suspicious Language</div>
+                    </div>
+                </div>
+
+                <div class="sources">
+                    <h3>📰 Sources Analyzed (${data.total_results} total found)</h3>
+                    ${data.sources.map(source => `
+                        <div class="source-item">
+                            <span class="source-status">${source.is_trusted ? '✅' : '❌'}</span>
+                            <span>${source.domain}</span>
+                            ${source.is_trusted ? `<small style="margin-left: auto; color: #718096;">
+                                Match: ${source.similarity.toFixed(2)} | Sentiment: ${source.sentiment_consistency.toFixed(2)}
+                            </small>` : ''}
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+
+            resultsDiv.style.display = 'block';
+        }
+
+        function showError(message) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.className = 'results';
+            resultsDiv.innerHTML = `
+                <div class="error">
+                    <strong>❌ Error:</strong> ${message}
+                </div>
+            `;
+            resultsDiv.style.display = 'block';
+        }
+
+        // Allow Enter key to submit
+        document.getElementById('headline').addEventListener('keydown', function (event) {
+            if (event.key === 'Enter' && event.ctrlKey) {
+                analyzeHeadline();
+            }
+        });
+    </script>
+</body>
+
+</html>
