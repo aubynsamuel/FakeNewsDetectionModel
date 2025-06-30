@@ -81,5 +81,4 @@ class SourceCredibilityAnalyzer:
         for tld in low_trust_tlds:
             if domain.endswith(tld):
                 return -0.3
-        # Medium trust is neutral
         return 0.0

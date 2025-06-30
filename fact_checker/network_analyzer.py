@@ -1,8 +1,7 @@
 import hashlib
 import time
 from collections import defaultdict, Counter
-from typing import List, Dict, Optional, Set
-from urllib.parse import urlparse
+from typing import List, Dict
 import re
 
 from utils import TRUSTED_DOMAINS, SUSPICIOUS_DOMAINS, extract_domain
@@ -28,7 +27,7 @@ class NetworkAnalyzer:
         """Generate a more robust story signature"""
         # Normalize headline for better matching
         normalized = re.sub(r'[^\w\s]', '', headline.lower())
-        normalized = ' '.join(normalized.split())  # Remove extra whitespace
+        normalized = ' '.join(normalized.split())
         return hashlib.md5(normalized.encode()).hexdigest()[:12]
     
     def _calculate_domain_credibility_score(self, domains: List[str]) -> float:
@@ -46,16 +45,14 @@ class NetworkAnalyzer:
         social_count = sum(count for domain, count in domain_counts.items() 
                          if domain in SOCIAL_AGGREGATOR_DOMAINS)
         
-        # Base score calculation
         trusted_ratio = trusted_count / total_sources
         suspicious_ratio = suspicious_count / total_sources
         social_ratio = social_count / total_sources
         
-        # Calculate weighted score
         score = 0.5  # Start neutral
-        score += trusted_ratio * 0.4  # Trusted sources boost score
-        score -= suspicious_ratio * 0.5  # Suspicious sources hurt more
-        score += social_ratio * 0.1  # Social sources slight boost (viral spread)
+        score += trusted_ratio * 0.4  
+        score -= suspicious_ratio * 0.5  
+        score += social_ratio * 0.1 
         
         return max(0.0, min(1.0, score))
     
@@ -65,29 +62,23 @@ class NetworkAnalyzer:
         unique_domains = len(set(domains))
         total_sources = len(domains)
         
-        # Calculate concentration (how evenly distributed)
         if unique_domains == 0:
             concentration = 1.0
         else:
-            # Gini coefficient approximation for concentration
             sorted_counts = sorted(domain_counts.values(), reverse=True)
             concentration = sum((2 * i - total_sources + 1) * count 
                               for i, count in enumerate(sorted_counts, 1)) / (total_sources * total_sources)
         
-        # Detect suspicious patterns
         coordination_flags = []
         
-        # Too many sources from suspicious domains
         suspicious_domains = [d for d in domains if d in SUSPICIOUS_DOMAINS]
         if len(suspicious_domains) > len(domains) * 0.6:
             coordination_flags.append("high_suspicious_concentration")
         
-        # Single domain dominance
         max_domain_share = max(domain_counts.values()) / total_sources if total_sources > 0 else 0
         if max_domain_share > 0.7 and unique_domains > 3:
             coordination_flags.append("single_domain_dominance")
         
-        # Unusual domain diversity patterns
         if unique_domains > 20 and total_sources < 30:
             coordination_flags.append("artificial_diversity")
         
@@ -160,32 +151,27 @@ class NetworkAnalyzer:
         
         # Adjust for domain diversity (natural vs artificial spread)
         if domain_diversity > 0.8:
-            base_score += 0.15  # High diversity bonus
+            base_score += 0.15
         elif domain_diversity < 0.2:
-            base_score -= 0.2   # Low diversity penalty
+            base_score -= 0.2
         
-        # Adjust for coordination flags
         coordination_penalty = len(coordination_analysis['coordination_flags']) * 0.1
         base_score -= coordination_penalty
         
-        # Boost for having trusted sources
         if trusted_count >= 3:
             base_score += 0.1
         
-        # Penalty for suspicious source dominance
         if suspicious_count > trusted_count and suspicious_count > total_domains * 0.4:
             base_score -= 0.2
         
         final_score = max(0.0, min(1.0, base_score))
         
-        # Calculate confidence based on data quality
         confidence = min(1.0, (
-            min(valid_urls / 10, 1.0) * 0.4 +  # More URLs = higher confidence
-            min(unique_domains / 5, 1.0) * 0.3 +  # More diverse sources = higher confidence
-            (1 - len(coordination_analysis['coordination_flags']) * 0.1) * 0.3  # Fewer red flags = higher confidence
+            min(valid_urls / 10, 1.0) * 0.4 +  
+            min(unique_domains / 5, 1.0) * 0.3 +  
+            (1 - len(coordination_analysis['coordination_flags']) * 0.1) * 0.3 
         ))
         
-        # Clean up old stories to prevent memory bloat
         if len(self.story_tracker) > self.max_stories:
             self._cleanup_old_stories()
         

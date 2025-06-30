@@ -308,7 +308,6 @@ class AdvancedClickbaitDetector:
         return is_clickbait, score, confidence
 
 
-# Example usage and training
 if __name__ == "__main__":
     detector = AdvancedClickbaitDetector()
     

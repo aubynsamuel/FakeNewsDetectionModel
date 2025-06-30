@@ -12,7 +12,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import hashlib
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format=' %(message)s')
 
 # Load SpaCy model once globally with error handling
 try:
@@ -420,5 +420,3 @@ class ClaimExtractor:
         except Exception as e:
             logging.debug(f"Content extraction error for {url}: {e}")
             return ""
-
-  
