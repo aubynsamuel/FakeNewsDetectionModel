@@ -47,12 +47,6 @@ class EnhancedFactChecker:
         }
         print(f"   Clickbait Score: {clickbait_score:.3f}")
         
-        # 2. Claim extraction
-        print("🎯 Extracting Claims...")
-        claims = self.claim_extractor.extract_claims(headline)
-        analysis_results["components"]["claims"] = claims
-        print(f"   Extracted {len(claims)} verifiable claims")
-        
         # 3. Temporal analysis
         print("⏰ Temporal Analysis...")
         temporal_analysis = self.temporal_analyzer.check_recycled_content(headline)
@@ -90,7 +84,7 @@ class EnhancedFactChecker:
             else:
                 print(f"   {i+1}. {domain} ❓ ({credibility['score']:.2f})")
         
-        avg_source_credibility = np.mean(source_scores) if source_scores else 0.25
+        avg_source_credibility = np.mean(source_scores) if source_scores else 0.1
         
         # 6. Network propagation analysis
         print("🌐 Network Propagation Analysis...")
@@ -102,20 +96,19 @@ class EnhancedFactChecker:
         # 7. Claim verification
         print("✅ Verifying Claims...")
         claim_verification_scores = []
-        for claim in claims[:3]:  # Verify top 3 claims
-            verification = self.claim_extractor.verify_claim_against_sources(
-                claim["text"], search_results
-            )
-            claim_verification_scores.append(verification["score"])
-            print(f"   '{claim['text']}': {verification['score']:.3f}")
+        verification = self.claim_extractor.verify_claim_against_sources(
+            headline, search_results
+        )
+        claim_verification_scores.append(verification["score"])
+        print(f"   '{headline}': {verification['score']:.3f}")
         
-        avg_claim_verification = np.mean(claim_verification_scores) if claim_verification_scores else 0.25
+        avg_claim_verification = np.mean(claim_verification_scores) if claim_verification_scores else 0.1
         
         # 8. Calculate final score with enhanced weighting
         components = {
-            "source_credibility": (avg_source_credibility, 0.225),
-            "claim_verification": (avg_claim_verification, 0.225),
+            "claim_verification": (avg_claim_verification, 0.25),
             "clickbait_detection": (1 - clickbait_score, 0.25),  # Invert: lower clickbait = higher credibility
+            "source_credibility": (avg_source_credibility, 0.20),
             "network_propagation": (network_analysis["score"], 0.20),
             "temporal_consistency": (1 - temporal_analysis["score"], 0.10)  # Invert: less recycling = higher credibility
         }

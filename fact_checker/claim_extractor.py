@@ -129,79 +129,9 @@ class ClaimExtractor:
         
         return entities
 
-    def extract_claims(self, headline: str) -> List[Dict]:
-        """Extract verifiable claims with improved performance"""
-        cache_key = self._cache_key(f"extract_{headline}")
-        cached_result = self._get_from_cache(cache_key)
-        if cached_result:
-            return cached_result
-        
-        claims = []
-        headline = headline.strip()
-        
-        if not headline:
-            return claims
-        
-        # 1. Fast regex-based numerical extraction
-        numerical_matches = self.number_pattern.findall(headline)
-        for match in numerical_matches:
-            claims.append({
-                "text": match.strip(),
-                "type": "NUMERICAL",
-                "context": headline,
-                "verifiable": True
-            })
-        
-        # 2. SpaCy-based entity extraction (if available)
-        if nlp:
-            try:
-                entities = self._process_spacy_doc(headline)
-                for ent in entities:
-                    # Avoid duplicates from regex
-                    if not any(claim["text"].lower() in ent["text"].lower() for claim in claims):
-                        claims.append({
-                            "text": ent["text"],
-                            "type": ent["type"],
-                            "context": headline,
-                            "verifiable": True
-                        })
-                
-                # 3. Simple action extraction
-                doc = nlp(headline)
-                for token in doc:
-                    if token.pos_ == "VERB" and token.dep_ == "ROOT":
-                        # Extract subject-verb patterns
-                        subjects = [child for child in token.children if child.dep_ in ["nsubj", "nsubjpass"]]
-                        if subjects:
-                            subject_text = " ".join([subj.text for subj in subjects])
-                            action_claim = f"{subject_text} {token.text}"
-                            
-                            # Only add if it contains named entities
-                            if any(ent["text"].lower() in action_claim.lower() for ent in entities):
-                                claims.append({
-                                    "text": action_claim,
-                                    "type": "ACTION_CLAIM",
-                                    "context": headline,
-                                    "verifiable": True
-                                })
-            except Exception as e:
-                logging.debug(f"SpaCy processing error: {e}")
-        
-        # Remove duplicates and filter short claims
-        unique_claims = []
-        seen_texts = set()
-        for claim in claims:
-            claim_text = claim["text"].lower().strip()
-            if len(claim_text) > 3 and claim_text not in seen_texts:
-                unique_claims.append(claim)
-                seen_texts.add(claim_text)
-        
-        # Cache result
-        self._add_to_cache(cache_key, unique_claims)
-        return unique_claims
-
     def verify_claim_against_sources(self, claim: str, search_results: List[str]) -> Dict:
         """Verify a specific claim against search results using enhanced similarity methods"""
+        # print("Search Results:", search_results)
         cache_key = self._cache_key(f"verify_{claim}")
         cached_result = self._get_from_cache(cache_key)
         if cached_result:
@@ -217,7 +147,7 @@ class ClaimExtractor:
         with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
             future_to_url = {
                 executor.submit(self._extract_content, url): url 
-                for url in search_results[:8]  # Process top 8 results
+                for url in search_results[:10]  # Process top 8 results
             }
             
             for future in as_completed(future_to_url, timeout=30):
@@ -251,7 +181,7 @@ class ClaimExtractor:
         if total_evidence > 0:
             verification_score = supporting_sources / total_evidence
         else:
-            verification_score = 0.5  # Neutral if no strong evidence
+            verification_score = 0.1  # Neutral if no strong evidence
         
         # Enhanced confidence calculation
         confidence_score = min(total_content_sources / 4.0, 1.0)
@@ -272,6 +202,7 @@ class ClaimExtractor:
         return result
     
     def _calculate_enhanced_similarity(self, text1: str, text2: str) -> float:
+        # print("Content: ", text2)
         """
         Calculate semantic similarity using SpaCy's word vectors (en_core_web_md benefits)
         with TF-IDF fallback for robustness
