@@ -309,31 +309,43 @@ class AdvancedClickbaitDetector:
 
 
 if __name__ == "__main__":
-    detector = AdvancedClickbaitDetector()
+    intent = input("Do want to train? (y/n) ")
     
-    # Train the model
-    print("Training advanced clickbait detector...")
-    success = detector.train()
-    
-    if success:
-        # Test examples
-        test_headlines = [
-            "You Won't Believe What Happened Next!",
-            "Scientists discover new treatment for diabetes",
-            "SHOCKING: This Simple Trick Will Change Your Life Forever",
-            "Economic growth shows steady improvement in Q3",
-            "10 Amazing Facts That Will Blow Your Mind",
-            "Research paper published on climate change impacts"
-        ]
+    if intent == "y":
+        # Train the model
+        print("Training advanced clickbait detector...")
+        detector = AdvancedClickbaitDetector()
+        success = detector.train()
         
-        print("\nTesting model on sample headlines:")
-        print("-" * 50)
-        
-        for headline in test_headlines:
-            is_clickbait, score, confidence = detector.predict_clickbait(headline)
+        if success:
+            # Test examples
+            test_headlines = [
+                "You Won't Believe What Happened Next!",
+                "Scientists discover new treatment for diabetes",
+                "SHOCKING: This Simple Trick Will Change Your Life Forever",
+                "Economic growth shows steady improvement in Q3",
+                "10 Amazing Facts That Will Blow Your Mind",
+                "Research paper published on climate change impacts"
+            ]
+            
+            print("\nTesting model on sample headlines:")
+            print("-" * 50)
+            
+            for headline in test_headlines:
+                is_clickbait, score, confidence = detector.predict_clickbait(headline)
+                status = "CLICKBAIT" if is_clickbait else "NORMAL"
+                print(f"{status} (Score: {score:.3f}, Confidence: {confidence:.3f})")
+                print(f"  '{headline}'")
+                print()
+        else:
+            print("Training failed. Please check your data files.")
+    else:
+        while True:
+            test_detector = AdvancedClickbaitDetector()
+            headline = input("Enter a headline to check clickbait score: ")
+            is_clickbait, score, confidence = test_detector.predict_clickbait(headline)
             status = "CLICKBAIT" if is_clickbait else "NORMAL"
-            print(f"{status} (Score: {score:.3f}, Confidence: {confidence:.3f})")
+            print(f"{status} Score: {score:.3f}")
             print(f"  '{headline}'")
             print()
-    else:
-        print("Training failed. Please check your data files.")
+         
