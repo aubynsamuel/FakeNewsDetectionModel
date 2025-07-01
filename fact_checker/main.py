@@ -11,6 +11,7 @@ from claim_verifier import ClaimVerifier
 from network_analyzer import NetworkAnalyzer
 from utils import extract_domain, remove_source_artifacts_fast
 
+
 class EnhancedFactChecker:
     """Main enhanced fact checker with ML integration"""
 
@@ -22,9 +23,11 @@ class EnhancedFactChecker:
 
         # print("\U0001F680 Enhanced ML-Powered Fact Checker Initialized")
 
-    def comprehensive_verify(self, raw_headline: str, results_to_check: int = 10) -> Dict:
+    def comprehensive_verify(
+        self, raw_headline: str, results_to_check: int = 10
+    ) -> Dict:
         """Comprehensive fact-checking with ML integration"""
-        print(f"\n\U0001F50D Comprehensive Analysis: \"{raw_headline}\"")
+        print(f'\n\U0001f50d Comprehensive Analysis: "{raw_headline}"')
         print("=" * 80)
         # headline = remove_source_artifacts_fast(raw_headline)
 
@@ -36,16 +39,18 @@ class EnhancedFactChecker:
         }
 
         # 1. Clickbait detection
-        print("\U0001F916 ML Clickbait Analysis...")
+        print("\U0001f916 ML Clickbait Analysis...")
         clickbait_score = self.clickbait_detector.detect_clickbait_score(raw_headline)
         print(f"   Clickbait Score: {clickbait_score:.3f}")
 
         # 3. Web search
-        print("\U0001F50E Searching and analyzing sources...")
+        print("\U0001f50e Searching and analyzing sources...")
         time.sleep(random.uniform(1.5, 3.0))
 
         try:
-            search_results = list(search(raw_headline, num_results=results_to_check, lang="en"))
+            search_results = list(
+                search(raw_headline, num_results=results_to_check, lang="en")
+            )
             print(f"   Found {len(search_results)} search results")
         except Exception as e:
             print(f"   ❌ Search error: {e}")
@@ -60,41 +65,45 @@ class EnhancedFactChecker:
                     "verdict": "🚫 HIGHLY QUESTIONABLE",
                     "confidence": "Very High",
                     "score": 0.1,
-                    "components": {}
-                }
+                    "components": {},
+                },
             }
 
         # 4. Source credibility
-        print("\U0001F4CA Analyzing source credibility...")
+        print("\U0001f4ca Analyzing source credibility...")
         source_scores = []
         trusted_count = 0
         suspicious_count = 0
 
         for i, url in enumerate(search_results[:results_to_check]):
             domain = extract_domain(url)
-            credibility = self.source_analyzer.analyze_domain_credibility(domain)
-            source_scores.append(credibility["score"])
+            credibility_score = self.source_analyzer.analyze_domain_credibility(domain)
+            source_scores.append(credibility_score)
 
-            if credibility["score"] > 0.7:
+            if credibility_score > 0.7:
                 trusted_count += 1
-                print(f"   {i+1}. {domain} ✅ ({credibility['score']:.2f})")
-            elif credibility["score"] < 0.3:
+                print(f"   {i+1}. {domain} ✅ ({credibility_score:.2f})")
+            elif credibility_score < 0.3:
                 suspicious_count += 1
-                print(f"   {i+1}. {domain} ❌ ({credibility['score']:.2f})")
+                print(f"   {i+1}. {domain} ❌ ({credibility_score:.2f})")
             else:
-                print(f"   {i+1}. {domain} ❓ ({credibility['score']:.2f})")
+                print(f"   {i+1}. {domain} ❓ ({credibility_score:.2f})")
 
         avg_source_credibility = np.mean(source_scores) if source_scores else 0.1
 
         # 5. Network analysis
-        print("\U0001F310 Network Propagation Analysis...")
-        network_analysis = self.network_analyzer.analyze_propagation_pattern(raw_headline, search_results)
+        print("\U0001f310 Network Propagation Analysis...")
+        network_analysis = self.network_analyzer.analyze_propagation_pattern(
+            raw_headline, search_results
+        )
         print(f"   Propagation Score: {network_analysis['score']:.3f}")
         print(f"   Domain Diversity: {network_analysis['domain_diversity']:.3f}")
 
         # 6. Claim verification (no extractor used)
         print("✅ Verifying Claims...")
-        verification = self.claim_verifier.verify_claim_against_sources(raw_headline, search_results)
+        verification = self.claim_verifier.verify_claim_against_sources(
+            raw_headline, search_results
+        )
         claim_verification_score = verification.get("score", 0.1)
         print(f"   '{raw_headline}': {claim_verification_score:.3f}")
 
@@ -129,7 +138,7 @@ class EnhancedFactChecker:
             "verdict": verdict,
             "confidence": confidence,
             "score": final_score,
-            "components": components
+            "components": components,
         }
 
         analysis_results["components"] = {
@@ -138,32 +147,31 @@ class EnhancedFactChecker:
                 "score": avg_source_credibility,
                 "trusted_count": trusted_count,
                 "suspicious_count": suspicious_count,
-                "weight": 0.25
+                "weight": 0.25,
             },
             "network": network_analysis,
-            "claim_verification": {
-                "score": claim_verification_score,
-                "verified_claims": 1,
-                "weight": 0.40
-            }
+            "claim_verification": {"score": claim_verification_score, "weight": 0.40},
         }
 
         # 9. Summary
         print(f"\n📈 COMPREHENSIVE ANALYSIS RESULTS:")
-        print(f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        print(
+            f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        )
         print(f"🎯 Final Score: {final_score:.3f}/1.000")
         print(f"🏆 Verdict: {verdict}")
         print(f"📊 Confidence: {confidence}")
 
         print(f"\n🔍 Component Breakdown:")
         for component, (score, weight) in components.items():
-            print(f"   • {component.replace('_', ' ').title()}: {score:.3f} (weight: {weight:.0%})")
+            print(
+                f"   • {component.replace('_', ' ').title()}: {score:.3f} (weight: {weight:.0%})"
+            )
 
         print(f"\n📋 Summary:")
         print(f"   • Trusted Sources: {trusted_count}")
         print(f"   • Suspicious Sources: {suspicious_count}")
-        print(f"   • Claims Verified: 1")
-        print(f"   • Clickbait Score: {clickbait_score:.3f}")
+        print(f"   • Clickbait Score: {clickbait_score:.3f} lower is better")
         print(f"   • Domain Diversity: {network_analysis['domain_diversity']:.3f}")
 
         return analysis_results
@@ -172,31 +180,33 @@ class EnhancedFactChecker:
 # Example usage and testing
 if __name__ == "__main__":
     checker = EnhancedFactChecker()
-    
+
     print("🚀 AI-Powered Fake News Detector")
     print("This system combines multiple ML techniques with fact-checking")
     print()
-    
+
     # Test examples
     test_headlines = [
         "SHOCKING: Scientists Don't Want You to Know This One Weird Trick!",
         "Parliament approves new healthcare funding for rural communities",
         "BREAKING: Leaked footage shows aliens landing in Ghana!",
-        "Bank of Ghana announces new monetary policy measures"
+        "Bank of Ghana announces new monetary policy measures",
     ]
-    
+
     choice = input("Test with sample headlines? (y/n): ").lower()
-    
-    if choice == 'y':
+
+    if choice == "y":
         for headline in test_headlines:
             result = checker.comprehensive_verify(headline, results_to_check=5)
-            print("\n" + "="*80 + "\n")
+            print("\n" + "=" * 80 + "\n")
             time.sleep(2)  # Pause between tests
     else:
         while True:
-            user_input = input("Enter news headline to verify (or 'quit' to exit): ").strip()
-            if user_input.lower() in ['quit', 'exit', 'q']:
+            user_input = input(
+                "Enter news headline to verify (or 'quit' to exit): "
+            ).strip()
+            if user_input.lower() in ["quit", "exit", "q"]:
                 break
             if user_input:
                 result = checker.comprehensive_verify(user_input)
-                print("\n" + "="*80 + "\n")
+                print("\n" + "=" * 80 + "\n")
