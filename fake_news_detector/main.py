@@ -8,17 +8,18 @@ from .preprocessing import parallel_preprocess
 from .training import OptimizedFakeNewsDetector
 
 # Suppress warnings for cleaner output
-warnings.filterwarnings('ignore')
+warnings.filterwarnings("ignore")
+
 
 def main():
     print("=== OPTIMIZED FAKE NEWS DETECTION TRAINING PIPELINE ===")
     start_time = time.time()
-    
+
     current_script_dir = Path(__file__).parent
     project_root_dir = current_script_dir.parent
-    fake_csv_path = project_root_dir / 'data' / 'Fake.csv'
-    true_csv_path = project_root_dir / 'data' / 'True.csv'
-    
+    fake_csv_path = project_root_dir / "data" / "Fake.csv"
+    true_csv_path = project_root_dir / "data" / "True.csv"
+
     texts, labels, _ = load_data(true_path=true_csv_path, fake_path=fake_csv_path)
     if texts is None:
         return
@@ -34,7 +35,9 @@ def main():
     print(f"After preprocessing: {len(processed_texts)} valid texts")
 
     use_bert = len(processed_texts) <= 15000
-    detector = OptimizedFakeNewsDetector(use_distilbert=use_bert, max_bert_samples=15000)
+    detector = OptimizedFakeNewsDetector(
+        use_distilbert=use_bert, max_bert_samples=15000
+    )
 
     print(f"Using {'DistilBERT' if use_bert else 'TF-IDF'} for feature extraction...")
     print("Extracting features...")
@@ -57,11 +60,13 @@ def main():
     print(f"\n=== TRAINING COMPLETE ===")
     print(f"Total training time: {total_time:.2f} seconds")
     print(f"Best model: {detector.best_model_name}")
-    print(f"Best F1-Score: {detector.models[detector.best_model_name]['metrics']['f1_score']:.4f}")
+    print(
+        f"Best F1-Score: {detector.models[detector.best_model_name]['metrics']['f1_score']:.4f}"
+    )
 
     print(f"\nModel Performance Comparison:")
     for name, result in detector.models.items():
-        metrics = result['metrics']
+        metrics = result["metrics"]
         print(f"{name}:")
         print(f"  F1-Score: {metrics['f1_score']:.4f}")
         print(f"  Training Time: {metrics['training_time']:.2f}s")

@@ -5,18 +5,18 @@ from typing import Dict
 import numpy as np
 from googlesearch import search
 
-from clickbait_checker import AdvancedClickbaitDetector
+from advanced_clickbait_checker import HybridClickbaitDetector
 from source_credibility_analyzer import SourceCredibilityAnalyzer
 from claim_verifier import ClaimVerifier
 from network_analyzer import NetworkAnalyzer
-from utils import extract_domain, remove_source_artifacts_fast
+from utils import extract_domain
 
 
 class EnhancedFactChecker:
     """Main enhanced fact checker with ML integration"""
 
     def __init__(self):
-        self.clickbait_detector = AdvancedClickbaitDetector()
+        self.clickbait_detector = HybridClickbaitDetector()
         self.source_analyzer = SourceCredibilityAnalyzer()
         self.claim_verifier = ClaimVerifier()  # Renamed and repurposed
         self.network_analyzer = NetworkAnalyzer()
@@ -40,7 +40,9 @@ class EnhancedFactChecker:
 
         # 1. Clickbait detection
         print("\U0001f916 ML Clickbait Analysis...")
-        clickbait_score = self.clickbait_detector.detect_clickbait_score(raw_headline)
+        is_clickbait, clickbait_score, confidence_ = (
+            self.clickbait_detector.predict_clickbait(raw_headline)
+        )
         print(f"   Clickbait Score: {clickbait_score:.3f}")
 
         # 3. Web search
@@ -94,7 +96,7 @@ class EnhancedFactChecker:
         # 5. Network analysis
         print("\U0001f310 Network Propagation Analysis...")
         network_analysis = self.network_analyzer.analyze_propagation_pattern(
-            raw_headline, search_results
+            search_results
         )
         print(f"   Propagation Score: {network_analysis['score']:.3f}")
         print(f"   Domain Diversity: {network_analysis['domain_diversity']:.3f}")
@@ -109,10 +111,10 @@ class EnhancedFactChecker:
 
         # 7. Weighted scoring
         components = {
-            "claim_verification": (claim_verification_score, 0.40),
+            "claim_verification": (claim_verification_score, 0.35),
             "source_credibility": (avg_source_credibility, 0.25),
             "clickbait_detection": (1 - clickbait_score, 0.25),
-            "network_propagation": (network_analysis["score"], 0.10),
+            "network_propagation": (network_analysis["score"], 0.15),
         }
 
         final_score = sum(score * weight for score, weight in components.values())
@@ -150,7 +152,7 @@ class EnhancedFactChecker:
                 "weight": 0.25,
             },
             "network": network_analysis,
-            "claim_verification": {"score": claim_verification_score, "weight": 0.40},
+            "claim_verification": {"score": claim_verification_score, "weight": 0.35},
         }
 
         # 9. Summary

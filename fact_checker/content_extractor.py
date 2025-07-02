@@ -3,6 +3,7 @@ import time
 import requests
 from bs4 import BeautifulSoup
 
+
 def extract_content(
     url: str,
     content_cache: dict,
