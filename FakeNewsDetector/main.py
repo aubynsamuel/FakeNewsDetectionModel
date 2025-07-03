@@ -27,7 +27,7 @@ class EnhancedFactChecker:
         # print("\U0001F680 Enhanced ML-Powered Fact Checker Initialized")
 
     def comprehensive_verify(
-        self, raw_headline: str, results_to_check: int = 10
+        self, raw_headline: str, results_to_check: int = 8
     ) -> Dict:
         """Comprehensive fact-checking with ML integration"""
         print(f'\n\U0001f50d Comprehensive Analysis: "{raw_headline}"')
@@ -42,9 +42,7 @@ class EnhancedFactChecker:
         }
 
         print("\U0001f916 ML Clickbait Analysis...")
-        is_clickbait, clickbait_score, confidence_ = (
-            self.clickbait_detector.predict_clickbait(raw_headline)
-        )
+        _, clickbait_score, _ = self.clickbait_detector.predict_clickbait(raw_headline)
         print(f"   Clickbait Score: {clickbait_score:.3f}")
 
         print("\U0001f50e Searching and analyzing sources...")
@@ -72,7 +70,7 @@ class EnhancedFactChecker:
                 },
             }
 
-        # 4. Source credibility
+        # Source credibility
         print("\U0001f4ca Analyzing source credibility...")
         source_scores = []
         trusted_count = 0
@@ -94,7 +92,7 @@ class EnhancedFactChecker:
 
         avg_source_credibility = np.mean(source_scores) if source_scores else 0.1
 
-        # 5. Network analysis
+        # Network analysis
         print("\U0001f310 Network Propagation Analysis...")
         network_analysis = self.network_analyzer.analyze_propagation_pattern(
             search_results
@@ -102,7 +100,7 @@ class EnhancedFactChecker:
         print(f"   Propagation Score: {network_analysis['score']:.3f}")
         print(f"   Domain Diversity: {network_analysis['domain_diversity']:.3f}")
 
-        # 6. Claim verification (no extractor used)
+        # Claim verification (no extractor used)
         print("✅ Verifying Claims...")
         verification = self.claim_verifier.verify_claim_against_sources(
             raw_headline, search_results
@@ -200,9 +198,9 @@ if __name__ == "__main__":
 
     if choice == "y":
         for headline in test_headlines:
-            result = checker.comprehensive_verify(headline, results_to_check=5)
+            result = checker.comprehensive_verify(headline, results_to_check=4)
             print("\n" + "=" * 80 + "\n")
-            time.sleep(2)  # Pause between tests
+            time.sleep(5)  # Pause between tests
     else:
         while True:
             user_input = input(

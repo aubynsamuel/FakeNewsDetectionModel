@@ -1,6 +1,6 @@
 .vscode
 .venv
-True.csv
-Fake.csv
-data
+# True.csv
+# Fake.csv
+# data
 FakeNewsDetector/__pycache__

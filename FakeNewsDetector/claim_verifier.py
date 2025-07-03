@@ -45,8 +45,15 @@ class ClaimVerifier:
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
             "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
             "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/117.0",
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Safari/605.1.15",
+            "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1",
+            "Mozilla/5.0 (Linux; Android 13; SM-G991B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.5735.196 Mobile Safari/537.36",
+            "Mozilla/5.0 (iPad; CPU OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Edge/18.18363",
+            "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/117.0",
         ]
-        self.current_ua_index = 1
+        self.current_ua_index = 0
         self.timeout = 10
         self.tfidf_vectorizer = TfidfVectorizer(
             stop_words="english",
@@ -145,7 +152,7 @@ class ClaimVerifier:
         with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
             future_to_url = {
                 executor.submit(self._analyze_url, url, claim): url
-                for url in search_results[:10]
+                for url in search_results
             }
             completed_futures = []
             try:
@@ -158,10 +165,7 @@ class ClaimVerifier:
                             total_sources_processed += 1
                             total_weight += domain_weight
 
-                            if best_similarity_score >= 0.7:
-                                support_scores.append(
-                                    best_similarity_score * domain_weight
-                                )
+                            support_scores.append(best_similarity_score * domain_weight)
 
                             source_details.append(
                                 {
@@ -226,18 +230,9 @@ class ClaimVerifier:
         if not content or len(content.strip()) < 50:
             return None
 
-        print(f"\nContent from {url} : {content}\n")
-        sentences = (
-            [sent.text for sent in nlp(content).sents] if nlp else content.split(".")
-        )
-
-        best_semantic_similarity = 0.0
-
-        for sent in sentences:
-            current_similarity = self._semantic_similarity(claim, sent)
-            if current_similarity > best_semantic_similarity:
-                best_semantic_similarity = current_similarity
+        semantic_similarity = self._semantic_similarity(claim, content)
+        # print(f"\Score from {url} : {semantic_similarity}\n")
 
         domain_weight, domain_type = self._get_domain_weight(url)
 
-        return best_semantic_similarity, domain_weight, domain_type
+        return semantic_similarity, domain_weight, domain_type
