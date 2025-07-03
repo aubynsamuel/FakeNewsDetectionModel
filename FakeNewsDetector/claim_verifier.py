@@ -165,7 +165,10 @@ class ClaimVerifier:
                             total_sources_processed += 1
                             total_weight += domain_weight
 
-                            support_scores.append(best_similarity_score * domain_weight)
+                            if best_similarity_score >= 0.5:
+                                support_scores.append(
+                                    best_similarity_score * domain_weight
+                                )
 
                             source_details.append(
                                 {
@@ -215,6 +218,8 @@ class ClaimVerifier:
             "source_details": source_details,
         }
         self._add_to_cache(cache_key, result)
+        # print(f"Total sources processed: {result['total_sources_processed']}")
+        # print(f"Support sum: {result['support_sum']}")
         return result
 
     def _analyze_url(self, url: str, claim: str) -> Optional[Tuple[float, float, str]]:
