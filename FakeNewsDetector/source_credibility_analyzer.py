@@ -136,7 +136,6 @@ class SourceCredibilityAnalyzer:
             if pattern.search(domain):
                 suspicious_score -= severity * 0.3
 
-        # Additional checks
         if len(domain.split(".")[0]) < 3:
             suspicious_score -= 0.2
 

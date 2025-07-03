@@ -18,7 +18,7 @@ class HybridClickbaitDetector:
         self.tfidf_vectorizer = None
         self.is_trained = False
 
-        # Enhanced clickbait patterns with semantic categories
+        # clickbait patterns with semantic categories
         self.clickbait_indicators = {
             "curiosity_gap": [
                 "you won't believe",
@@ -92,7 +92,7 @@ class HybridClickbaitDetector:
             ],
         }
 
-    def extract_enhanced_features(self, texts):
+    def _extract_enhanced_features(self, texts):
         """Extract comprehensive handcrafted features"""
         features = []
 
@@ -163,18 +163,18 @@ class HybridClickbaitDetector:
 
         return np.array(features)
 
-    def load_and_prepare_data(self):
+    def _load_and_prepare_data(self):
         """Load and prepare training data"""
         print("Loading datasets...")
 
-        # Load your existing data files
+        # Load existing data files
         current_script_dir = os.path.dirname(os.path.abspath(__file__))
         project_root_dir = os.path.dirname(current_script_dir)
         clickbait_csv_path = os.path.join(
-            project_root_dir, "data", "fixed_clickbait_data.csv"
+            project_root_dir, "data", "clickbait_data.csv"
         )
         non_clickbait_csv_path = os.path.join(
-            project_root_dir, "data", "fixed_non_clickbait_data.csv"
+            project_root_dir, "data", "non_clickbait_data.csv"
         )
 
         try:
@@ -203,18 +203,16 @@ class HybridClickbaitDetector:
             print(f"Error loading data: {e}")
             return None, None
 
-    def train(
+    def _train(
         self,
-        output_dir="./optimized_model",
+        output_dir="./clickbait_checker_model",
         epochs=10,  # Increased epochs for Logistic Regression
-        batch_size=None,  # Not used for Logistic Regression
-        learning_rate=None,  # Not used for Logistic Regression
     ):
         """Train the optimized hybrid model"""
         print("Starting optimized training...")
 
         # Load data
-        texts, labels = self.load_and_prepare_data()
+        texts, labels = self._load_and_prepare_data()
         if texts is None:
             return False
 
@@ -235,7 +233,7 @@ class HybridClickbaitDetector:
 
         print("Training TF-IDF vectorizer...")
         self.tfidf_vectorizer = TfidfVectorizer(
-            max_features=5000,  # Adjusted for potentially better performance
+            max_features=5000,
             ngram_range=(1, 2),
             min_df=5,
             max_df=0.8,
@@ -245,10 +243,10 @@ class HybridClickbaitDetector:
         val_tfidf_features = self.tfidf_vectorizer.transform(val_texts)
         print("TF-IDF vectorizer trained.")
 
-        print("Extracting enhanced features...")
-        train_handcrafted_features = self.extract_enhanced_features(train_texts)
-        val_handcrafted_features = self.extract_enhanced_features(val_texts)
-        print("Enhanced features extracted.")
+        print("Extracting features...")
+        train_handcrafted_features = self._extract_enhanced_features(train_texts)
+        val_handcrafted_features = self._extract_enhanced_features(val_texts)
+        print("Features extracted.")
 
         # Combine features
         X_train = np.hstack(
@@ -293,7 +291,7 @@ class HybridClickbaitDetector:
 
         return True
 
-    def load_model(self, model_dir="optimized_model"):
+    def _load_model(self, model_dir="clickbait_checker_model"):
         """Load the trained model"""
         try:
             with open(f"{model_dir}/logistic_regression_model.pkl", "rb") as f:
@@ -318,12 +316,12 @@ class HybridClickbaitDetector:
     def predict_clickbait(self, headline, threshold=0.5):
         """Predict clickbait with hybrid approach"""
         if not self.is_trained:
-            if not self.load_model():
+            if not self._load_model():
                 return False, 0.0, 0.0
 
         # TF-IDF + handcrafted features score
         tfidf_features = self.tfidf_vectorizer.transform([headline])
-        handcrafted_features = self.extract_enhanced_features([headline])
+        handcrafted_features = self._extract_enhanced_features([headline])
 
         # Combine features
         combined_features = np.hstack((tfidf_features.toarray(), handcrafted_features))
@@ -349,8 +347,8 @@ if __name__ == "__main__":
         print(f"  '{headline}'")
         print()
 
-    # Train the model automatically for testing
-    # success = detector.train(epochs=200)  # Use default epochs for LR
+    # # Train the model automatically for testing
+    # success = detector._train(epochs=200)  # Use default epochs for LR
 
     # if success:
     #     # Test the model

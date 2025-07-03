@@ -11,7 +11,6 @@ from sklearn.metrics.pairwise import cosine_similarity
 import nltk
 import numpy as np
 
-# Download required NLTK data (run once)
 try:
     nltk.data.find("tokenizers/punkt")
 except LookupError:

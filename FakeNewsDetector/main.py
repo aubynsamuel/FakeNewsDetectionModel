@@ -1,3 +1,6 @@
+import os
+
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 import time
 import random
 from datetime import datetime
@@ -18,7 +21,7 @@ class EnhancedFactChecker:
     def __init__(self):
         self.clickbait_detector = HybridClickbaitDetector()
         self.source_analyzer = SourceCredibilityAnalyzer()
-        self.claim_verifier = ClaimVerifier()  # Renamed and repurposed
+        self.claim_verifier = ClaimVerifier()
         self.network_analyzer = NetworkAnalyzer()
 
         # print("\U0001F680 Enhanced ML-Powered Fact Checker Initialized")
@@ -38,14 +41,12 @@ class EnhancedFactChecker:
             "final_verdict": {},
         }
 
-        # 1. Clickbait detection
         print("\U0001f916 ML Clickbait Analysis...")
         is_clickbait, clickbait_score, confidence_ = (
             self.clickbait_detector.predict_clickbait(raw_headline)
         )
         print(f"   Clickbait Score: {clickbait_score:.3f}")
 
-        # 3. Web search
         print("\U0001f50e Searching and analyzing sources...")
         time.sleep(random.uniform(1.5, 3.0))
 

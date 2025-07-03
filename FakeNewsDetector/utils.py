@@ -3,7 +3,7 @@ import re
 from multiprocessing import Pool, cpu_count
 from tqdm import tqdm
 
-# Enhanced trusted domains (your original + more)
+# Trusted domains
 TRUSTED_DOMAINS = {
     # 🌍 International Mainstream News
     "abcnews.go.com",

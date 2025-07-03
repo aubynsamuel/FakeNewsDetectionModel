@@ -3,6 +3,4 @@
 True.csv
 Fake.csv
 data
-fake_news_detector/__pycache__
-fact_checker/__pycache__
-fact_checker/models
+FakeNewsDetector/__pycache__

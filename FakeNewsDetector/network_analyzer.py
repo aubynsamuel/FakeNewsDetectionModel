@@ -1,4 +1,3 @@
-import time
 import math
 from collections import Counter
 from typing import List, Dict
@@ -102,7 +101,11 @@ class NetworkAnalyzer:
         return max(0.0, min(1.0, score))
 
     def _calculate_diversity_quality(self, domains: List[str]) -> Dict:
-        """Calculate diversity quality - returns score and entropy"""
+        """Calculate diversity quality - returns score and entropy
+        Entropy here is a statistical measure of domain diversity,
+        helping to assess whether a claim’s spread is broad and
+        organic or narrow and potentially suspicious.
+        """
         if len(domains) < 2:
             return {"score": 0.0, "entropy": 0.0}
 
@@ -138,7 +141,6 @@ class NetworkAnalyzer:
         if single_mention_domains > total_sources * 0.8 and total_sources > 10:
             diversity_score -= 0.3
 
-        # Healthy diversity bonus
         if 0.3 <= normalized_entropy <= 0.8 and unique_domains >= 3:
             diversity_score += 0.2
 

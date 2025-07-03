@@ -30,7 +30,7 @@ def extract_content(
         response = requests.get(url, headers=headers, timeout=timeout)
         response.raise_for_status()
 
-        # Handle encoding properly
+        # Handle encoding
         if response.encoding is None or response.encoding.lower() in [
             "iso-8859-1",
             "ascii",
