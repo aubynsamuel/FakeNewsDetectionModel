@@ -205,7 +205,7 @@ class HybridClickbaitDetector:
 
     def _train(
         self,
-        output_dir="./clickbait_checker_model",
+        output_dir="./models",
         epochs=10,  # Increased epochs for Logistic Regression
     ):
         """Train the optimized hybrid model"""
@@ -291,7 +291,7 @@ class HybridClickbaitDetector:
 
         return True
 
-    def _load_model(self, model_dir="clickbait_checker_model"):
+    def _load_model(self, model_dir="./models"):
         """Load the trained model"""
         try:
             with open(f"{model_dir}/logistic_regression_model.pkl", "rb") as f:
@@ -339,34 +339,34 @@ class HybridClickbaitDetector:
 # Usage example
 if __name__ == "__main__":
     detector = HybridClickbaitDetector()
-    while True:
-        headline = input("Enter a headline to check clickbait score: ")
-        is_clickbait, score, confidence = detector.predict_clickbait(headline)
-        status = "CLICKBAIT" if is_clickbait else "NORMAL"
-        print(f"{status} (Score: {score:.3f}, Confidence: {confidence:.3f})")
-        print(f"  '{headline}'")
-        print()
+    # while True:
+    #     headline = input("Enter a headline to check clickbait score: ")
+    #     is_clickbait, score, confidence = detector.predict_clickbait(headline)
+    #     status = "CLICKBAIT" if is_clickbait else "NORMAL"
+    #     print(f"{status} (Score: {score:.3f}, Confidence: {confidence:.3f})")
+    #     print(f"  '{headline}'")
+    #     print()
 
     # # Train the model automatically for testing
-    # success = detector._train(epochs=200)  # Use default epochs for LR
+    success = detector._train(epochs=200)  # Use default epochs for LR
 
-    # if success:
-    #     # Test the model
-    #     test_headlines = [
-    #         "You Won't Believe What Happened Next!",
-    #         "Scientists discover new treatment for diabetes",
-    #         "10 Amazing Secrets That Will Change Your Life Forever",
-    #         "Economic growth shows steady improvement in Q3",
-    #         "This Simple Trick Will Shock You - Doctors Hate It!",
-    #         "Research published on climate change impacts",
-    #     ]
+    if success:
+        # Test the model
+        test_headlines = [
+            "You Won't Believe What Happened Next!",
+            "Scientists discover new treatment for diabetes",
+            "10 Amazing Secrets That Will Change Your Life Forever",
+            "Economic growth shows steady improvement in Q3",
+            "This Simple Trick Will Shock You - Doctors Hate It!",
+            "Research published on climate change impacts",
+        ]
 
-    #     print("\nTesting hybrid model:")
-    #     print("-" * 60)
+        print("\nTesting hybrid model:")
+        print("-" * 60)
 
-    #     for headline in test_headlines:
-    #         is_clickbait, score, confidence = detector.predict_clickbait(headline)
-    #         status = "CLICKBAIT" if is_clickbait else "NORMAL"
-    #         print(f"{status} (Score: {score:.3f}, Confidence: {confidence:.3f})")
-    #         print(f"  '{headline}'")
-    #         print()
+        for headline in test_headlines:
+            is_clickbait, score, confidence = detector.predict_clickbait(headline)
+            status = "CLICKBAIT" if is_clickbait else "NORMAL"
+            print(f"{status} (Score: {score:.3f}, Confidence: {confidence:.3f})")
+            print(f"  '{headline}'")
+            print()

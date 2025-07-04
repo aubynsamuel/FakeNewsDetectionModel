@@ -4,15 +4,15 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 import time
 import random
 from datetime import datetime
-from typing import Dict, List, Tuple, Optional, Any
+from typing import Dict, List, Tuple, Any
 import numpy as np
 from googlesearch import search
 
-from advanced_clickbait_checker import HybridClickbaitDetector
-from source_credibility_analyzer import SourceCredibilityAnalyzer
-from claim_verifier import ClaimVerifier
-from network_analyzer import NetworkAnalyzer
-from utils import extract_domain
+from .advanced_clickbait_checker import HybridClickbaitDetector
+from .source_credibility_analyzer import SourceCredibilityAnalyzer
+from .claim_verifier import ClaimVerifier
+from .network_analyzer import NetworkAnalyzer
+from .utils import extract_domain
 
 
 class EnhancedFactChecker:

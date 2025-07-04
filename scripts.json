@@ -1,0 +1,5 @@
+{
+  "train_clickbait_checker": "python FakeNewsDetector/advanced_clickbait_checker.py",
+  "main": "python FakeNewsDetector/main.py",
+  "deploy": "python -m FlaskImpl.app"
+}

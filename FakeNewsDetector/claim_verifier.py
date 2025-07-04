@@ -12,8 +12,8 @@ from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 from textblob import TextBlob
 
-from utils import TRUSTED_DOMAINS, SUSPICIOUS_DOMAINS
-from content_extractor import extract_content
+from .utils import TRUSTED_DOMAINS, SUSPICIOUS_DOMAINS
+from .content_extractor import extract_content
 
 warnings.filterwarnings("ignore")
 
