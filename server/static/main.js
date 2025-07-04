@@ -53,6 +53,7 @@ async function analyzeHeadline() {
 
 function showResults(data) {
   const resultsDiv = document.getElementById("results");
+  const metricsExplanation = document.getElementById("metrics-explanation");
 
   // Map confidence to color and icon
   const verdictIcons = {
@@ -141,6 +142,10 @@ function showResults(data) {
         }</b></div>
     `;
   resultsDiv.style.display = "block";
+  // Show metrics explanation after displaying results
+  if (metricsExplanation) {
+    metricsExplanation.style.display = "block";
+  }
 }
 
 function showError(message) {
