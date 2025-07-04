@@ -1,0 +1,25 @@
+{
+  "headline": "Drop in inflation should give Bank of Ghana room to cut policy rate – Theo Acheampong",
+  "timestamp": "2025-07-04T03:14:05.211848",
+  "final_verdict": {
+    "verdict": "⚠️ Unclear — Conflicting Information",
+    "confidence": "Moderate",
+    "score": 0.49,
+    "components": {
+      "claim_verification": 0.118,
+      "source_credibility": 0.47,
+      "clickbait_detection": 1.0,
+      "network_propagation": 0.545
+    }
+  },
+  "components": {
+    "clickbait": { "score": 0.0 },
+    "source_credibility": {
+      "score": 0.47,
+      "trusted_count": 2,
+      "suspicious_count": 2
+    },
+    "network": { "score": 0.545, "domain_diversity": 0.969 },
+    "claim_verification": { "score": 0.118 }
+  }
+}

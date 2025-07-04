@@ -1,6 +1,6 @@
 import re
 from urllib.parse import urlparse
-from utils import TRUSTED_DOMAINS, SUSPICIOUS_DOMAINS
+from .utils import TRUSTED_DOMAINS, SUSPICIOUS_DOMAINS
 
 
 class SourceCredibilityAnalyzer:

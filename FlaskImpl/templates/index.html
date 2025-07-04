@@ -341,72 +341,72 @@
         function showResults(data) {
             const resultsDiv = document.getElementById('results');
 
-            // Get verdict icon and color
-            const icons = {
-                'real': '✅',
-                'fake': '🚫',
-                'maybe': '⚠️',
-                'uncertain': '❓'
+            // Map confidence to color and icon
+            const verdictIcons = {
+                'Very High': '✅',
+                'High': '🟢',
+                'Moderate': '⚠️',
+                'Low': '🟠',
+                'Very Low': '🚫'
             };
-
             const verdictColors = {
-                'real': '#48bb78',
-                'fake': '#f56565',
-                'maybe': '#ed8936',
-                'uncertain': '#718096'
+                'Very High': '#48bb78',
+                'High': '#38a169',
+                'Moderate': '#ed8936',
+                'Low': '#ed8936',
+                'Very Low': '#f56565'
             };
 
-            resultsDiv.className = `results ${data.verdict_class}`;
+            const verdict = data.final_verdict?.verdict || 'N/A';
+            const confidence = data.final_verdict?.confidence || 'N/A';
+            const score = data.final_verdict?.score !== undefined ? data.final_verdict.score : 'N/A';
+            const components = data.final_verdict?.components || {};
+            const details = data.components || {};
+
+            // Build metrics table from components
+            function metricRow(label, value, color) {
+                return `<div class="metric">
+                    <div class="metric-value" style="color: ${color}">${value}</div>
+                    <div class="metric-label">${label}</div>
+                </div>`;
+            }
+
+            let metricsHTML = '';
+            if (Object.keys(components).length > 0) {
+                metricsHTML = `<div class="metrics">
+                    ${metricRow('Claim Verification', components.claim_verification, components.claim_verification >= 0.6 ? '#48bb78' : '#f56565')}
+                    ${metricRow('Source Credibility', components.source_credibility, components.source_credibility >= 0.6 ? '#48bb78' : '#f56565')}
+                    ${metricRow('Clickbait Detection', components.clickbait_detection, components.clickbait_detection >= 0.6 ? '#48bb78' : '#f56565')}
+                    ${metricRow('Network Propagation', components.network_propagation, components.network_propagation >= 0.6 ? '#48bb78' : '#f56565')}
+                </div>`;
+            }
+
+            // Details section
+            let detailsHTML = '';
+            if (details.source_credibility) {
+                detailsHTML += `<div class="metric-label" style="margin-top:10px;">Trusted Sources: <b>${details.source_credibility.trusted_count}</b> &nbsp; | &nbsp; Suspicious Sources: <b>${details.source_credibility.suspicious_count}</b></div>`;
+            }
+            if (details.clickbait) {
+                detailsHTML += `<div class="metric-label">Clickbait Score: <b>${details.clickbait.score}</b> (lower is better)</div>`;
+            }
+            if (details.network) {
+                detailsHTML += `<div class="metric-label">Domain Diversity: <b>${details.network.domain_diversity}</b></div>`;
+            }
+
+            resultsDiv.className = 'results';
             resultsDiv.innerHTML = `
                 <div class="verdict">
-                    <div class="verdict-icon">${icons[data.verdict_class]}</div>
+                    <div class="verdict-icon">${verdictIcons[confidence] || '❓'}</div>
                     <div class="verdict-text">
-                        <h2 style="color: ${verdictColors[data.verdict_class]}">${data.verdict}</h2>
-                        <p>Confidence: ${data.confidence} • Score: ${data.final_score}/1.00</p>
+                        <h2 style="color: ${verdictColors[confidence] || '#718096'}">${verdict}</h2>
+                        <p>Confidence: ${confidence} • Score: ${score}/1.00</p>
                     </div>
                 </div>
-
-                <div class="metrics">
-                    <div class="metric">
-                        <div class="metric-value" style="color: ${data.metrics.trusted_sources >= 2 ? '#48bb78' : '#f56565'}">
-                            ${data.metrics.trusted_sources}
-                        </div>
-                        <div class="metric-label">Trusted Sources</div>
-                    </div>
-                    <div class="metric">
-                        <div class="metric-value" style="color: ${data.metrics.content_similarity >= 0.3 ? '#48bb78' : '#f56565'}">
-                            ${data.metrics.content_similarity}
-                        </div>
-                        <div class="metric-label">Content Match</div>
-                    </div>
-                    <div class="metric">
-                        <div class="metric-value" style="color: ${data.metrics.sentiment_consistency >= 0.7 ? '#48bb78' : '#f56565'}">
-                            ${data.metrics.sentiment_consistency}
-                        </div>
-                        <div class="metric-label">Sentiment Match</div>
-                    </div>
-                    <div class="metric">
-                        <div class="metric-value" style="color: ${data.metrics.suspicious_score <= 0.3 ? '#48bb78' : '#f56565'}">
-                            ${data.metrics.suspicious_score}
-                        </div>
-                        <div class="metric-label">Suspicious Language</div>
-                    </div>
-                </div>
-
-                <div class="sources">
-                    <h3>📰 Sources Analyzed (${data.total_results} total found)</h3>
-                    ${data.sources.map(source => `
-                        <div class="source-item">
-                            <span class="source-status">${source.is_trusted ? '✅' : '❌'}</span>
-                            <span>${source.domain}</span>
-                            ${source.is_trusted ? `<small style="margin-left: auto; color: #718096;">
-                                Match: ${source.similarity.toFixed(2)} | Sentiment: ${source.sentiment_consistency.toFixed(2)}
-                            </small>` : ''}
-                        </div>
-                    `).join('')}
-                </div>
+                ${metricsHTML}
+                ${detailsHTML}
+                <div class="metric-label" style="margin-top:10px;">Headline: <b>${data.headline || ''}</b></div>
+                <div class="metric-label">Timestamp: <b>${data.timestamp || ''}</b></div>
             `;
-
             resultsDiv.style.display = 'block';
         }
 
