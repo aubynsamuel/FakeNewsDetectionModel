@@ -1,6 +1,7 @@
 import math
 from collections import Counter
 from typing import List, Dict
+
 from .utils import TRUSTED_DOMAINS, SUSPICIOUS_DOMAINS, extract_domain
 
 SOCIAL_AGGREGATOR_DOMAINS = {

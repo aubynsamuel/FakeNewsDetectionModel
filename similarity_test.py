@@ -1,6 +1,4 @@
 import os
-from concurrent.futures import ThreadPoolExecutor
-from functools import partial
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 from sentence_transformers import SentenceTransformer
