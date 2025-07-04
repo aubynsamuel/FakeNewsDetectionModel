@@ -6,17 +6,15 @@ import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import hashlib
 from urllib.parse import urlparse
-import torch
 import warnings
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 from textblob import TextBlob
 
-from .utils import TRUSTED_DOMAINS, SUSPICIOUS_DOMAINS
-from .content_extractor import extract_content
+from deploy.utils.general_utils import TRUSTED_DOMAINS, SUSPICIOUS_DOMAINS
+from deploy.utils.content_extractor import extract_content
 
 warnings.filterwarnings("ignore")
-
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 
@@ -62,9 +60,8 @@ class ClaimVerifier:
             max_features=5000,
             ngram_range=(1, 2),
         )
-
         self.sentence_transformer = None
-        self.device = "cuda" if torch.cuda.is_available() else "cpu"
+
         try:
             self.sentence_transformer = SentenceTransformer("paraphrase-MiniLM-L12-v2")
         except Exception as e:

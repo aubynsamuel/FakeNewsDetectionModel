@@ -1,7 +1,3 @@
 .vscode
 .venv
-# True.csv
-# Fake.csv
-# data
-FakeNewsDetector/__pycache__
-FlaskImpl/__pycache__
+**/__pycache__/

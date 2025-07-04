@@ -1,5 +1,7 @@
 {
-  "train_clickbait_checker": "python -m FakeNewsDetector.advanced_clickbait_checker",
-  "main": "python -m FakeNewsDetector.main",
-  "deploy": "python -m FlaskImpl.app"
+  "install_dependencies": "pip install -r requirements.txt",
+  "train_clickbait_checker": "python -m models_training.clickbait_model_trainer",
+  "test_clickbait_model": "python -m deploy.main.predict_clickbait",
+  "main": "python -m deploy.index",
+  "deploy": "python -m server.app"
 }
