@@ -345,7 +345,7 @@ class EnhancedFactChecker:
             },
         }
 
-        self._print_summary(analysis_results)
+        # self._print_summary(analysis_results)
         return analysis_results
 
 
@@ -389,10 +389,11 @@ if __name__ == "__main__":
                         break
                     if user_input:
                         result = checker.comprehensive_verify(user_input)
-                        # print(f"\n📊 Analysis Result:")
-                        # print(f"Score: {result['final_verdict']['score']}")
-                        # print(f"Verdict: {result['final_verdict']['verdict']}")
-                        print(result)
+                        print(f"\n📊 Analysis Result:")
+                        print(f"Score: {result['final_verdict']['score']}")
+                        print(f"Verdict: {result['final_verdict']['verdict']}")
+                        print(f"{result['final_verdict']['components']}")
+                        # print(result)
                         print("\n" + "=" * 80 + "\n")
                     else:
                         print("Please enter a valid headline.")
