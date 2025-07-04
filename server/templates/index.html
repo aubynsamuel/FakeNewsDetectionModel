@@ -386,9 +386,9 @@
             if (details.source_credibility) {
                 detailsHTML += `<div class="metric-label" style="margin-top:10px;">Trusted Sources: <b>${details.source_credibility.trusted_count}</b> &nbsp; | &nbsp; Suspicious Sources: <b>${details.source_credibility.suspicious_count}</b></div>`;
             }
-            if (details.clickbait) {
-                detailsHTML += `<div class="metric-label">Clickbait Score: <b>${details.clickbait.score}</b> (lower is better)</div>`;
-            }
+            // if (details.clickbait) {
+            //     detailsHTML += `<div class="metric-label">Clickbait Score: <b>${details.clickbait.score}</b> (lower is better)</div>`;
+            // }
             if (details.network) {
                 detailsHTML += `<div class="metric-label">Domain Diversity: <b>${details.network.domain_diversity}</b></div>`;
             }

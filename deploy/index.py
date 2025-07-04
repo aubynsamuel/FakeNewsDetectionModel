@@ -392,8 +392,8 @@ if __name__ == "__main__":
                         print(f"\n📊 Analysis Result:")
                         print(f"Score: {result['final_verdict']['score']}")
                         print(f"Verdict: {result['final_verdict']['verdict']}")
-                        print(f"{result['final_verdict']['components']}")
-                        # print(result)
+                        print(f"{result['final_verdict']['components']}\n")
+                        print(result)
                         print("\n" + "=" * 80 + "\n")
                     else:
                         print("Please enter a valid headline.")
