@@ -46,7 +46,7 @@ class EnhancedFactChecker:
         try:
             _, clickbait_score, _ = self.clickbait_detector.predict_clickbait(headline)
             clickbait_score = self._to_float(clickbait_score, 0.5)
-            print(f"   Clickbait Score: {clickbait_score:.3f}")
+            print(f"   Clickbait Score: {clickbait_score:.2f}")
             return clickbait_score
         except Exception as e:
             print(f"   ❌ Clickbait analysis error: {e}")
@@ -128,8 +128,8 @@ class EnhancedFactChecker:
                 ),
             }
 
-            print(f"   Propagation Score: {result['score']:.3f}")
-            print(f"   Domain Diversity: {result['domain_diversity']:.3f}")
+            print(f"   Propagation Score: {result['score']:.2f}")
+            print(f"   Domain Diversity: {result['domain_diversity']:.2f}")
             return result
         except Exception as e:
             print(f"   ❌ Network analysis error: {e}")
@@ -148,7 +148,7 @@ class EnhancedFactChecker:
                 headline, search_results
             )
             claim_verification_score = self._to_float(verification.get("score", 0.1))
-            print(f"   '{headline}': {claim_verification_score:.3f}")
+            print(f"   '{headline}': {claim_verification_score:.2f}")
             return claim_verification_score
         except Exception as e:
             print(f"   ❌ Claim verification error: {e}")
@@ -197,13 +197,13 @@ class EnhancedFactChecker:
         print(
             f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
         )
-        print(f"🎯 Final Score: {final_verdict['score']:.3f}/1.000")
+        print(f"🎯 Final Score: {final_verdict['score']:.2f}/1.000")
         print(f"🏆 Verdict: {final_verdict['verdict']}")
         print(f"📊 Confidence: {final_verdict['confidence']}")
 
         print(f"🔍 Component Breakdown:")
         for component, score in final_verdict["components"].items():
-            print(f"   • {component.replace('_', ' ').title()}: {score:.3f}")
+            print(f"   • {component.replace('_', ' ').title()}: {score:.2f}")
 
         print(f"📋 Summary:")
         print(
@@ -213,9 +213,9 @@ class EnhancedFactChecker:
             f"   • Suspicious Sources: {components['source_credibility']['suspicious_count']}"
         )
         print(
-            f"   • Clickbait Score: {components['clickbait']['score']:.3f} (lower is better)"
+            f"   • Clickbait Score: {components['clickbait']['score']:.2f} (lower is better)"
         )
-        print(f"   • Domain Diversity: {components['network']['domain_diversity']:.3f}")
+        print(f"   • Domain Diversity: {components['network']['domain_diversity']:.2f}")
 
     def comprehensive_verify(
         self, raw_headline: str, results_to_check: int = 8
@@ -314,34 +314,34 @@ class EnhancedFactChecker:
             "final_verdict": {
                 "verdict": verdict,
                 "confidence": confidence,
-                "score": round(final_score, 3),
+                "score": round(final_score, 2),
                 "components": {
                     "claim_verification": round(
-                        component_scores["claim_verification"], 3
+                        component_scores["claim_verification"], 2
                     ),
                     "source_credibility": round(
-                        component_scores["source_credibility"], 3
+                        component_scores["source_credibility"], 2
                     ),
                     "clickbait_detection": round(
-                        component_scores["clickbait_detection"], 3
+                        component_scores["clickbait_detection"], 2
                     ),
                     "network_propagation": round(
-                        component_scores["network_propagation"], 3
+                        component_scores["network_propagation"], 2
                     ),
                 },
             },
             "components": {
-                "clickbait": {"score": round(clickbait_score, 3)},
+                "clickbait": {"score": round(clickbait_score, 2)},
                 "source_credibility": {
-                    "score": round(avg_source_credibility, 3),
+                    "score": round(avg_source_credibility, 2),
                     "trusted_count": trusted_count,
                     "suspicious_count": suspicious_count,
                 },
                 "network": {
-                    "score": round(network_analysis["score"], 3),
-                    "domain_diversity": round(network_analysis["domain_diversity"], 3),
+                    "score": round(network_analysis["score"], 2),
+                    "domain_diversity": round(network_analysis["domain_diversity"], 2),
                 },
-                "claim_verification": {"score": round(claim_verification_score, 3)},
+                "claim_verification": {"score": round(claim_verification_score, 2)},
             },
         }
 
