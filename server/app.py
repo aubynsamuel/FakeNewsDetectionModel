@@ -1,9 +1,9 @@
 from flask import Flask, render_template, request, jsonify
-from FakeNewsDetector.main import EnhancedFactChecker
+from deploy.index import FakeNewsDetector
 
 app = Flask(__name__)
 
-analyzer = EnhancedFactChecker()
+analyzer = FakeNewsDetector()
 
 
 @app.route("/")

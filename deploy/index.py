@@ -1,5 +1,6 @@
 import os
 
+
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 import time
 import random
@@ -8,19 +9,18 @@ from typing import Dict, List, Tuple, Any
 import numpy as np
 from googlesearch import search
 
-from .advanced_clickbait_checker import HybridClickbaitDetector
-from .source_credibility_analyzer import SourceCredibilityAnalyzer
-from .claim_verifier import ClaimVerifier
-from .network_analyzer import NetworkAnalyzer
-from .utils import extract_domain
+from deploy.main.claim_verifier import ClaimVerifier
+from deploy.main.network_analyzer import NetworkAnalyzer
+from deploy.main.source_credibility_analyzer import SourceCredibilityAnalyzer
+from deploy.utils.general_utils import extract_domain
+from deploy.main.predict_clickbait import predict_clickbait
 
 
-class EnhancedFactChecker:
+class FakeNewsDetector:
     """Main enhanced fact checker with ML integration"""
 
     def __init__(self):
         try:
-            self.clickbait_detector = HybridClickbaitDetector()
             self.source_analyzer = SourceCredibilityAnalyzer()
             self.claim_verifier = ClaimVerifier()
             self.network_analyzer = NetworkAnalyzer()
@@ -44,7 +44,7 @@ class EnhancedFactChecker:
         """Analyzes the headline for clickbait characteristics."""
         print("🧠 ML Clickbait Analysis...")
         try:
-            _, clickbait_score, _ = self.clickbait_detector.predict_clickbait(headline)
+            _, clickbait_score, _ = predict_clickbait(headline)
             clickbait_score = self._to_float(clickbait_score, 0.5)
             print(f"   Clickbait Score: {clickbait_score:.2f}")
             return clickbait_score
@@ -352,7 +352,7 @@ class EnhancedFactChecker:
 # Example usage and testing
 if __name__ == "__main__":
     try:
-        checker = EnhancedFactChecker()
+        checker = FakeNewsDetector()
 
         print("🚀 AI-Powered Fake News Detector")
         print("This system combines multiple ML techniques with fact-checking")

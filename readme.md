@@ -1,4 +1,4 @@
-# ✅ EnhancedFactChecker – Expected Behavior
+# ✅ FakeNewsDetector – Expected Behavior
 
 This is the **main orchestrator** that coordinates all modules to evaluate a news headline's credibility.
 
