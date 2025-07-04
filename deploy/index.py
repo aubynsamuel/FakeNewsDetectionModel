@@ -171,20 +171,20 @@ class FakeNewsDetector:
         )
 
         if final_score >= 0.75:
-            verdict = "✅ Credible — Backed by Evidence"
+            verdict = "Credible — Backed by Evidence"
             confidence = "Very High"
         elif final_score >= 0.60:
-            verdict = "🟢 Likely True — Supported by Sources"
+            verdict = "Likely True — Supported by Sources"
             confidence = "High"
         elif final_score >= 0.45:
-            verdict = "⚠️ Unclear — Conflicting Information"
+            verdict = "Unclear — Conflicting Information"
             confidence = "Moderate"
         elif final_score >= 0.30:
-            verdict = "🟠 Doubtful — Weak or Biased Evidence"
-            confidence = "Low"
+            verdict = "Doubtful — Weak or Biased Evidence"
+            confidence = "High"
         else:
-            verdict = "🚫 False or Misleading — No Basis Found"
-            confidence = "Very Low"
+            verdict = "False or Misleading — No Basis Found"
+            confidence = "Very High"
 
         return final_score, verdict, confidence
 
@@ -392,8 +392,8 @@ if __name__ == "__main__":
                         print(f"\n📊 Analysis Result:")
                         print(f"Score: {result['final_verdict']['score']}")
                         print(f"Verdict: {result['final_verdict']['verdict']}")
-                        print(f"{result['final_verdict']['components']}")
-                        # print(result)
+                        print(f"{result['final_verdict']['components']}\n")
+                        print(result)
                         print("\n" + "=" * 80 + "\n")
                     else:
                         print("Please enter a valid headline.")
