@@ -129,7 +129,7 @@ function showResults(data) {
                 <h2 style="color: ${
                   verdictColors[confidence] || "#718096"
                 }">${verdict}</h2>
-                <p>Confidence: ${confidence} • Score: ${score}/1.00</p>
+                <p style="color:black">• Score: ${score}/1.00</p>
             </div>
         </div>
         ${metricsHTML}
