@@ -28,7 +28,7 @@ def load_model(model_dir="./models/clickbait"):
 
 def predict_clickbait(headline, threshold=0.5):
     """Predict clickbait with hybrid approach"""
-    classifier, tfidf_vectorizer, clickbait_indicators = load_model()
+    classifier, tfidf_vectorizer, _ = load_model()
 
     tfidf_features = tfidf_vectorizer.transform([headline])
     handcrafted_features = extract_enhanced_features([headline])
