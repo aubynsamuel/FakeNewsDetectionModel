@@ -9,7 +9,7 @@ from typing import Dict, List, Tuple, Any
 import numpy as np
 from googlesearch import search
 
-from deploy.main.claim_verifier import ClaimVerifier
+# from deploy.main.claim_verifier import ClaimVerifier
 from deploy.main.network_analyzer import NetworkAnalyzer
 from deploy.main.source_credibility_analyzer import SourceCredibilityAnalyzer
 from deploy.utils.general_utils import extract_domain
@@ -22,7 +22,7 @@ class FakeNewsDetector:
     def __init__(self):
         try:
             self.source_analyzer = SourceCredibilityAnalyzer()
-            self.claim_verifier = ClaimVerifier()
+            # self.claim_verifier = ClaimVerifier()
             self.network_analyzer = NetworkAnalyzer()
             self.clickbait_predictor = ClickbaitPredictor()
         except Exception as e:
@@ -153,7 +153,7 @@ class FakeNewsDetector:
             return claim_verification_score
         except Exception as e:
             print(f"   ❌ Claim verification error: {e}")
-            return 0.1
+            return 0.5
 
     def _calculate_final_score_and_verdict(
         self, component_scores: Dict[str, float]
