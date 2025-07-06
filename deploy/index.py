@@ -13,7 +13,7 @@ from deploy.main.claim_verifier import ClaimVerifier
 from deploy.main.network_analyzer import NetworkAnalyzer
 from deploy.main.source_credibility_analyzer import SourceCredibilityAnalyzer
 from deploy.utils.general_utils import extract_domain
-from deploy.main.predict_clickbait import predict_clickbait
+from deploy.main.predict_clickbait import ClickbaitPredictor
 
 
 class FakeNewsDetector:
@@ -24,6 +24,7 @@ class FakeNewsDetector:
             self.source_analyzer = SourceCredibilityAnalyzer()
             self.claim_verifier = ClaimVerifier()
             self.network_analyzer = NetworkAnalyzer()
+            self.clickbait_predictor = ClickbaitPredictor()
         except Exception as e:
             print(f"❌ Error initializing components: {e}")
             raise
@@ -44,7 +45,7 @@ class FakeNewsDetector:
         """Analyzes the headline for clickbait characteristics."""
         print("🧠 ML Clickbait Analysis...")
         try:
-            _, clickbait_score, _ = predict_clickbait(headline)
+            _, clickbait_score, _ = self.clickbait_predictor.predict(headline)
             clickbait_score = self._to_float(clickbait_score, 0.5)
             print(f"   Clickbait Score: {clickbait_score:.2f}")
             return clickbait_score
