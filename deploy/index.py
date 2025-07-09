@@ -9,7 +9,7 @@ from typing import Dict, List, Tuple, Any
 import numpy as np
 from googlesearch import search
 
-# from deploy.main.claim_verifier import ClaimVerifier
+from deploy.main.claim_verifier import ClaimVerifier
 from deploy.main.network_analyzer import NetworkAnalyzer
 from deploy.main.source_credibility_analyzer import SourceCredibilityAnalyzer
 from deploy.utils.general_utils import extract_domain
@@ -22,7 +22,7 @@ class FakeNewsDetector:
     def __init__(self):
         try:
             self.source_analyzer = SourceCredibilityAnalyzer()
-            # self.claim_verifier = ClaimVerifier()
+            self.claim_verifier = ClaimVerifier()
             self.network_analyzer = NetworkAnalyzer()
             self.clickbait_predictor = ClickbaitPredictor()
         except Exception as e:
@@ -55,11 +55,11 @@ class FakeNewsDetector:
 
     def _search_for_sources(self, headline: str, num_results: int) -> List[str]:
         """Searches the web for sources related to the headline."""
-        print("🔎 Searching and analyzing sources...")
+        # print("🔎 Searching and analyzing sources...")
         try:
             time.sleep(random.uniform(1.5, 3.0))
             search_results = list(search(headline, num_results=num_results, lang="en"))
-            print(f"   Found {len(search_results)} search results")
+            # print(f"   Found {len(search_results)} search results")
             return search_results
         except Exception as e:
             print(f"   ❌ Search error: {e}")
@@ -142,26 +142,26 @@ class FakeNewsDetector:
 
         if not search_results:
             print("   ❌ No search results for claim verification")
-            return 0.1
+            return 0.4
 
         try:
             verification = self.claim_verifier.verify_claim_against_sources(
                 headline, search_results
             )
-            claim_verification_score = self._to_float(verification.get("score", 0.1))
+            claim_verification_score = self._to_float(verification.get("score", 0.4))
             print(f"   '{headline}': {claim_verification_score:.2f}")
             return claim_verification_score
         except Exception as e:
             print(f"   ❌ Claim verification error: {e}")
-            return 0.5
+            return 0.4
 
     def _calculate_final_score_and_verdict(
         self, component_scores: Dict[str, float]
     ) -> Tuple[float, str, str]:
         """Calculates the final weighted score and determines the verdict."""
         weights = {
-            "claim_verification": 0.35,
-            "source_credibility": 0.25,
+            "claim_verification": 0.30,
+            "source_credibility": 0.30,
             "clickbait_detection": 0.25,
             "network_propagation": 0.15,
         }
@@ -394,7 +394,7 @@ if __name__ == "__main__":
                         print(f"Score: {result['final_verdict']['score']}")
                         print(f"Verdict: {result['final_verdict']['verdict']}")
                         print(f"{result['final_verdict']['components']}\n")
-                        print(result)
+                        # print(result)
                         print("\n" + "=" * 80 + "\n")
                     else:
                         print("Please enter a valid headline.")
