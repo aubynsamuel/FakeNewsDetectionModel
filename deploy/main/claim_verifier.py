@@ -7,11 +7,11 @@ import warnings
 import re
 import numpy as np
 from nltk.tokenize import sent_tokenize
-import tensorflow_hub as hub
+# import tensorflow_hub as hub
 
 from deploy.utils.general_utils import TRUSTED_DOMAINS, SUSPICIOUS_DOMAINS
 from deploy.utils.content_extractor import extract_content
-from deploy.utils.debertaflow_inference import EntailmentAnalyzer
+# from deploy.utils.debertaflow_inference import EntailmentAnalyzer
 
 warnings.filterwarnings("ignore")
 
@@ -21,8 +21,8 @@ class ClaimVerifier:
     """Enhanced claim verifier with smart sentence extraction and prioritized scraping."""
 
     def __init__(self, cache_size: int = 500, max_workers: int = 4):
-        self.entailmentAnalyzer = EntailmentAnalyzer()
-        self.use_embed = hub.load("https://tfhub.dev/google/universal-sentence-encoder/4")
+        # self.entailmentAnalyzer = EntailmentAnalyzer()
+        # self.use_embed = hub.load("https://tfhub.dev/google/universal-sentence-encoder/4")
         self.claim_cache: Dict[str, Dict] = {}
         self.content_cache: Dict[str, str] = {}
         self.cache_size = cache_size
