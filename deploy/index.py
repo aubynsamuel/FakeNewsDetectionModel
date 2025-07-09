@@ -1,3 +1,4 @@
+import gc
 import os
 
 
@@ -14,6 +15,8 @@ from deploy.main.network_analyzer import NetworkAnalyzer
 from deploy.main.source_credibility_analyzer import SourceCredibilityAnalyzer
 from deploy.utils.general_utils import extract_domain
 from deploy.main.predict_clickbait import ClickbaitPredictor
+
+gc.collect()
 
 
 class FakeNewsDetector:
