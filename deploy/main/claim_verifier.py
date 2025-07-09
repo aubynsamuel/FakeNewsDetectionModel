@@ -22,7 +22,6 @@ class ClaimVerifier:
 
     def __init__(self, cache_size: int = 500, max_workers: int = 4):
         self.entailmentAnalyzer = EntailmentAnalyzer()
-        # Replace SentenceTransformer with TensorFlow Hub's Universal Sentence Encoder
         self.use_embed = hub.load("https://tfhub.dev/google/universal-sentence-encoder/4")
         self.claim_cache: Dict[str, Dict] = {}
         self.content_cache: Dict[str, str] = {}
