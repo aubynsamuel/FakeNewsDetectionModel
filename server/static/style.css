@@ -277,8 +277,9 @@ input:checked + .slider:before {
 
 .footer {
   padding: 10px;
-  text-align: center;
   color: #7f8c8d;
+  align-content: center;
+  text-align: center;
 }
 
 [data-theme="dark"] .footer {
@@ -299,7 +300,6 @@ input:checked + .slider:before {
   min-height: 80vh;
   width: 100%;
   justify-content: center;
-  align-items: center;
   align-content: center;
   padding-bottom: 10px;
   /* remove horizontal paddings on small screens */
