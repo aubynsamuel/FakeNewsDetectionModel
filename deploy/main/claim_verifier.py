@@ -1,37 +1,28 @@
 from typing import List, Dict, Optional, Tuple
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
-import spacy
 import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import hashlib
 from urllib.parse import urlparse
 import warnings
-from sentence_transformers import SentenceTransformer
-from sklearn.metrics.pairwise import cosine_similarity
-from textblob import TextBlob
+import re
+import numpy as np
+from nltk.tokenize import sent_tokenize
+# import tensorflow_hub as hub
 
 from deploy.utils.general_utils import TRUSTED_DOMAINS, SUSPICIOUS_DOMAINS
 from deploy.utils.content_extractor import extract_content
+# from deploy.utils.debertaflow_inference import EntailmentAnalyzer
 
 warnings.filterwarnings("ignore")
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 
-# Load SpaCy model
-try:
-    nlp = spacy.load("en_core_web_md")
-except OSError:
-    logging.error(
-        "⚠️ SpaCy English model 'en_core_web_md' not found. Please install: python -m spacy download en_core_web_md"
-    )
-    nlp = None
-
-
 class ClaimVerifier:
-    """Improved claim verifier for fact-checking headlines against web sources using paraphrase-MiniLM-L12-v2 for semantic similarity."""
+    """Enhanced claim verifier with smart sentence extraction and prioritized scraping."""
 
     def __init__(self, cache_size: int = 500, max_workers: int = 4):
+        # self.entailmentAnalyzer = EntailmentAnalyzer()
+        # self.use_embed = hub.load("https://tfhub.dev/google/universal-sentence-encoder/4")
         self.claim_cache: Dict[str, Dict] = {}
         self.content_cache: Dict[str, str] = {}
         self.cache_size = cache_size
@@ -53,22 +44,6 @@ class ClaimVerifier:
         ]
         self.current_ua_index = 0
         self.timeout = 10
-        self.tfidf_vectorizer = TfidfVectorizer(
-            stop_words="english",
-            min_df=1,
-            max_df=0.9,
-            max_features=5000,
-            ngram_range=(1, 2),
-        )
-        self.sentence_transformer = None
-
-        try:
-            self.sentence_transformer = SentenceTransformer("paraphrase-MiniLM-L12-v2")
-        except Exception as e:
-            logging.error(
-                f"❌ Failed to load paraphrase-MiniLM-L12-v2 model: {e}. Claim verification will fallback to SpaCy/TF-IDF."
-            )
-            self.sentence_transformer = None
 
     def _get_domain_weight(self, url: str) -> Tuple[float, str]:
         domain = urlparse(url).netloc.lower().replace("www.", "")
@@ -78,6 +53,58 @@ class ClaimVerifier:
             return self.domain_weights["suspicious"], "suspicious"
         else:
             return self.domain_weights["neutral"], "neutral"
+
+    def _prioritize_sources(self, search_results: List[str]) -> List[str]:
+        """Prioritize trusted sources if we have enough of them."""
+        trusted_sources = [url for url in search_results if self._get_domain_weight(url)[1] == "trusted"]
+        other_sources = [url for url in search_results if self._get_domain_weight(url)[1] != "trusted"]
+        
+        if len(trusted_sources) >= 4:
+            return trusted_sources[:8]
+        else:
+            return (trusted_sources + other_sources)[:10]
+
+    def _extract_relevant_sentences(self, content: str, claim: str, top_k: int = 5) -> List[str]:
+        """Extract the most relevant sentences from content for claim verification."""
+        if not content or len(content.strip()) < 50:
+            return []
+        
+        sentences = sent_tokenize(content)
+        
+        filtered_sentences = [
+            s.strip() for s in sentences 
+            if 20 < len(s.strip()) < 300 and not self._is_noise_sentence(s)
+        ]
+        
+        if not filtered_sentences:
+            return []
+        
+        if len(filtered_sentences) <= top_k:
+            return filtered_sentences
+        
+        try:
+            claim_embedding = self.use_embed([claim])
+            sentence_embeddings = self.use_embed(filtered_sentences)
+            similarities = np.inner(claim_embedding, sentence_embeddings).flatten()
+            top_indices = np.argsort(similarities)[-top_k:][::-1]
+            return [filtered_sentences[i] for i in top_indices]
+        except Exception as e:
+            logging.error(f"Error in sentence ranking: {e}")
+            return filtered_sentences[:top_k]
+
+    def _is_noise_sentence(self, sentence: str) -> bool:
+        """Check if a sentence is likely noise (navigation, ads, etc.)."""
+        noise_patterns = [
+            r'^(click|tap|read|view|see|watch|follow|subscribe)',
+            r'(cookie|privacy|terms|conditions|policy)',
+            r'(advertisement|sponsored|ad)',
+            r'(©|copyright|\u00a9)',
+            r'^(home|about|contact|menu|search)',
+            r'(javascript|enable|browser|update)',
+            r'^[\W\d\s]*$',
+        ]
+        sentence_lower = sentence.lower()
+        return any(re.search(pattern, sentence_lower) for pattern in noise_patterns)
 
     def _get_user_agent(self) -> str:
         ua = self.user_agents[self.current_ua_index]
@@ -96,145 +123,122 @@ class ClaimVerifier:
     def _get_from_cache(self, key: str) -> Optional[Dict]:
         return self.claim_cache.get(key)
 
-    def _semantic_similarity(self, text1: str, text2: str) -> float:
-        """
-        Calculates semantic similarity using paraphrase-MiniLM-L12-v2 embeddings.
-        Falls back to SpaCy/TF-IDF if paraphrase-MiniLM-L12-v2 is not loaded or fails.
-        """
-        if self.sentence_transformer:
-            sentence_embeddings1 = self.sentence_transformer.encode(
-                text1, show_progress_bar=False
-            )
-            sentence_embeddings2 = self.sentence_transformer.encode(
-                text2, show_progress_bar=False
-            )
-            sentiment1 = TextBlob(text1).sentiment.polarity
-            sentiment2 = TextBlob(text2).sentiment.polarity
-            similarity = cosine_similarity(
-                sentence_embeddings1.reshape(1, -1), sentence_embeddings2.reshape(1, -1)
-            )[0][0]
-            # Sentiment adjustment
-            if sentiment1 * sentiment2 > 0:  # Both positive or both negative
-                similarity = min(1.0, similarity * 1.1)
-            elif sentiment1 * sentiment2 < 0:  # Opposing sentiment
-                similarity = max(0.0, similarity * 0.9)
-            return similarity
+    def _semantic_similarity_with_sentences(self, claim: str, sentences: List[str]) -> float:
+        """Calculate entailment scores and return the best one."""
+        if not sentences or not (self.entailmentAnalyzer.interpreter and self.entailmentAnalyzer.embedder):
+            return 0.1
+        
+        best_score = 0.0
+        entailment_count = 0
+        
+        for sentence in sentences:
+            try:
+                nli_prediction = self.entailmentAnalyzer.predict_nli_tflite(claim, sentence)
+                score_map = {"Entailment": 0.95, "Neutral": 0.3, "Contradiction": 0.2}
+                score = score_map.get(nli_prediction, 0.1)
+                
+                if score > best_score:
+                    best_score = score
+                if nli_prediction == "Entailment":
+                    entailment_count += 1
+                if best_score >= 0.9:
+                    break
+            except Exception as e:
+                logging.error(f"Error analyzing sentence: {e}")
+                continue
+        
+        if entailment_count > 1:
+            best_score = min(0.98, best_score * 1.1)
+            
+        return best_score
 
-        if nlp and nlp(text1).has_vector and nlp(text2).has_vector:
-            doc1 = nlp(text1.lower())
-            doc2 = nlp(text2.lower())
-            return float(doc1.similarity(doc2))
-
-        try:
-            tfidf_matrix = self.tfidf_vectorizer.fit_transform([text1, text2])
-            if tfidf_matrix.shape[0] < 2 or tfidf_matrix.shape[1] == 0:
-                return 0.0
-            return float(cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:2])[0][0])
-        except Exception:
-            return 0.0
-
-    def verify_claim_against_sources(
-        self, claim: str, search_results: List[str]
-    ) -> Dict:
+    def verify_claim_against_sources(self, claim: str, search_results: List[str]) -> Dict:
+        logging.info(f"\nVerifying Claim: '{claim}'...")
+        
         cache_key = self._cache_key(f"verify_{claim}")
-        cached_result = self._get_from_cache(cache_key)
-        if cached_result:
+        if (cached_result := self._get_from_cache(cache_key)):
+            logging.info("📋 Using cached result")
             return cached_result
 
+        prioritized_sources = self._prioritize_sources(search_results)
+        
         support_scores = []
         total_weight = 0.0
-        total_sources_processed = 0
         source_details = []
 
         with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
-            future_to_url = {
-                executor.submit(self._analyze_url, url, claim): url
-                for url in search_results
-            }
-            completed_futures = []
+            future_to_url = {executor.submit(self._analyze_url, url, claim): url for url in prioritized_sources}
+            
             try:
                 for future in as_completed(future_to_url, timeout=45):
                     url = future_to_url[future]
                     try:
-                        result = future.result(timeout=15)
-                        if result:
-                            best_similarity_score, domain_weight, domain_type = result
-                            total_sources_processed += 1
+                        if (result := future.result(timeout=15)):
+                            similarity_score, domain_weight, domain_type, sentences = result
+                            
+                            # Enhanced Logging Format
+                            logging.info(f"\nSource: {url} ({domain_type})")
+                            logging.info(f"  - Relevant Sentences: {sentences[:2]}") # Log first 2 sentences
+                            logging.info(f"  - Entailment Score: {similarity_score:.2f}")
+
                             total_weight += domain_weight
+                            if similarity_score >= 0.5:
+                                support_scores.append(similarity_score * domain_weight)
 
-                            if best_similarity_score >= 0.5:
-                                support_scores.append(
-                                    best_similarity_score * domain_weight
-                                )
-
-                            source_details.append(
-                                {
-                                    "url": url,
-                                    "semantic_similarity": best_similarity_score,
-                                    "domain_weight": domain_weight,
-                                    "domain_type": domain_type,
-                                }
-                            )
-                        completed_futures.append(future)
+                            source_details.append({
+                                "url": url, "semantic_similarity": similarity_score,
+                                "domain_weight": domain_weight, "domain_type": domain_type,
+                                "relevant_sentences": sentences[:3],
+                            })
                     except Exception as e:
-                        logging.warning(f"Error processing URL {url}: {e}")
-                        continue
+                        logging.error(f"Error processing {url}: {e}")
             except TimeoutError:
-                logging.warning(
-                    "Timeout: Some URLs took too long to respond and were skipped."
-                )
-
-            for future in set(future_to_url) - set(completed_futures):
-                url = future_to_url[future]
-                logging.warning(f"Skipped slow URL (>{15}s): {url}")
+                logging.warning("⏰ Timeout: Some URLs were skipped.")
 
         support_sum = sum(support_scores)
-
-        if total_sources_processed == 0 or total_weight == 0:
-            final_score = 0.1
-        else:
-            max_possible_support = total_weight
-            if max_possible_support > 0:
-                final_score = min(1.0, support_sum / max_possible_support)
-            else:
-                final_score = 0.1
-
+        
+        if total_weight > 0:
+            final_score = min(1.0, support_sum / total_weight)
+            # Adjustments
             if final_score < 0.5 and support_sum < 0.5:
-                final_score = max(0.1, final_score * 0.8)  # Push down more
-
+                final_score *= 0.8
             elif final_score > 0.5 and support_sum >= 1.0:
-                final_score = min(0.9, final_score * 1.1)  # Push up more
+                final_score = min(0.9, final_score * 1.1)
+        else:
+            final_score = 0.1
 
-            final_score = max(0.0, min(1.0, final_score))
+        final_score = max(0.0, min(1.0, final_score))
+        logging.info(f"\n{'='*20}\n🏁 Final Verification Score: {final_score:.2f}\n{'='*20}")
 
         result = {
             "score": final_score,
-            "total_sources_processed": total_sources_processed,
+            "total_sources_processed": len(source_details),
             "support_sum": support_sum,
             "total_weight": total_weight,
             "source_details": source_details,
         }
         self._add_to_cache(cache_key, result)
-        # print(f"Total sources processed: {result['total_sources_processed']}")
-        # print(f"Support sum: {result['support_sum']}")
         return result
 
-    def _analyze_url(self, url: str, claim: str) -> Optional[Tuple[float, float, str]]:
-        cache_key = self._cache_key(url)
-        content = extract_content(
-            url,
-            self.content_cache,
-            cache_key,
-            self._get_user_agent,
-            self.timeout,
-            self.cache_size,
-        )
-        if not content or len(content.strip()) < 50:
+    def _analyze_url(self, url: str, claim: str) -> Optional[Tuple[float, float, str, List[str]]]:
+        try:
+            cache_key = self._cache_key(url)
+            content = extract_content(
+                url, self.content_cache, cache_key, self._get_user_agent, self.timeout, self.cache_size
+            )
+            
+            if not content or len(content.strip()) < 50:
+                return None
+
+            relevant_sentences = self._extract_relevant_sentences(content, claim)
+            
+            if not relevant_sentences:
+                return None
+
+            semantic_similarity = self._semantic_similarity_with_sentences(claim, relevant_sentences)
+            domain_weight, domain_type = self._get_domain_weight(url)
+
+            return semantic_similarity, domain_weight, domain_type, relevant_sentences
+        except Exception as e:
+            logging.error(f"Failed to analyze URL {url}: {e}")
             return None
-
-        semantic_similarity = self._semantic_similarity(claim, content)
-        # print(f"\Score from {url} : {semantic_similarity}\n")
-
-        domain_weight, domain_type = self._get_domain_weight(url)
-
-        return semantic_similarity, domain_weight, domain_type
