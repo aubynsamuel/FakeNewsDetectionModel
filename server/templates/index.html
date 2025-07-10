@@ -5,62 +5,65 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Fake News Detector</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../static/style.css">
 </head>
 
 <body>
     <div class="container">
         <div class="header">
-            <h1>🔍 AI Fake News Detector</h1>
-            <p>Advanced AI analysis to verify news headlines using multiple credibility factors</p>
+            <div class="logo">
+                <i class="fas fa-robot"></i>
+            </div>
+            <h1>AI Fake News Detector</h1>
+            <p>Your intelligent assistant for verifying news headlines with advanced AI analysis.</p>
+            <div class="theme-switcher">
+                <i class="fas fa-sun"></i>
+                <label class="switch">
+                    <input type="checkbox" id="darkModeToggle">
+                    <span class="slider round"></span>
+                </label>
+                <i class="fas fa-moon"></i>
+            </div>
         </div>
 
         <div class="input-section">
             <div class="input-group">
-                <label for="headline">Enter News Headline:</label>
+                <label for="headline">Enter News Headline</label>
                 <textarea id="headline"
-                    placeholder="Paste a news headline here to analyze its credibility...&#10;&#10;Example: 'Scientists discover new treatment for diabetes'"></textarea>
+                    placeholder="e.g., 'New study reveals surprising benefits of chocolate...'"></textarea>
             </div>
             <button class="analyze-btn" onclick="analyzeHeadline()">
-                🚀 Analyze Headline
+                <i class="fas fa-search"></i> Analyze Headline
             </button>
         </div>
 
-        <div class="loading" id="loading">
+        <div id="loading" class="loading" style="display:none;">
             <div class="spinner"></div>
-            <p>Analyzing headline with AI algorithms...<br>
-                <small>Checking trusted sources, content similarity, and language patterns</small>
-            </p>
+            <p>Analyzing... please wait.</p>
         </div>
 
-        <div class="results" id="results">
-            <!-- Results will be populated here -->
+        <div id="results" class="results-section" style="display:none;">
         </div>
 
-        <div id="metrics-explanation" style="display:none; margin-top:20px;">
-            <h3 style="color: #0009; margin-bottom: 10px; margin-left: 10px;">Explanation of Key Metrics</h3>
-            <ul style="margin-left: 40px;">
-                <li><b style="color: #0009;">Claim Verification</b>: Measures how well the headline's claim is supported
-                    by credible
-                    sources
-                    found online.
-                </li>
-                <li><b style="color: #0009;">Source Credibility</b>: Evaluates the trustworthiness of the sources
-                    reporting the news
-                    headline.
-                </li>
-                <li><b style="color: #0009;">Clickbait Detection</b>: Assesses whether the headline uses sensational or
-                    misleading
-                    language to
-                    attract
-                    attention.</li>
-                <li><b style="color: #0009;">Network Propagation</b>: Analyzes how widely and diversely the news is
-                    being shared across
-                    different
-                    domains and platforms.</li>
+        <div id="metrics-explanation" style="display:none;" class="metrics-explanation">
+            <h3>Understanding the Metrics</h3>
+            <ul>
+                <li><i class="fas fa-check-circle"></i> <strong>Claim Verification:</strong> How well the claim is
+                    backed by credible online sources.</li>
+                <li><i class="fas fa-shield-alt"></i> <strong>Source Credibility:</strong> The trustworthiness of the
+                    news sources.</li>
+                <li><i class="fas fa-mouse-pointer"></i> <strong>Clickbait Detection:</strong> Whether the headline uses
+                    sensational language to attract clicks.</li>
+                <li><i class="fas fa-project-diagram"></i> <strong>Network Propagation:</strong> How widely the news is
+                    being shared across platforms.</li>
             </ul>
         </div>
     </div>
+
+    <footer class="footer">
+        <p>&copy; 2024 AI Fake News Detector. All Rights Reserved.</p>
+    </footer>
 
     <script src="../static/main.js"></script>
 </body>

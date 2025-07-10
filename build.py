@@ -1,5 +1,6 @@
 import gc
-# import tensorflow_hub as hub
+
+import tensorflow_hub as hub
 import nltk
 
 gc.collect()
@@ -10,6 +11,6 @@ except LookupError:
     nltk.download("punkt")
     nltk.download("punkt_tab")
 
-# USE_MODEL_URL = "https://tfhub.dev/google/universal-sentence-encoder/4"
+USE_MODEL_URL = "https://tfhub.dev/google/universal-sentence-encoder/4"
 
-# use_model = hub.load(USE_MODEL_URL)
+use_model = hub.load(USE_MODEL_URL)
