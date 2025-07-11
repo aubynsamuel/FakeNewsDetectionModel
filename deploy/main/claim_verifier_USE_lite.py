@@ -7,10 +7,14 @@ import warnings
 import re
 import numpy as np
 from nltk.tokenize import sent_tokenize
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+import string
 
 from deploy.utils.general_utils import TRUSTED_DOMAINS, SUSPICIOUS_DOMAINS
 from deploy.utils.content_extractor import extract_content
-from deploy.utils.entailment_analyzer_USE_lite import EntailmentAnalyzer
+from deploy.utils.entailment_analyzer import EntailmentAnalyzer
+from deploy.utils.url_filter import _is_corrupted_pdf_content, _is_pdf_or_download_url
 
 warnings.filterwarnings("ignore")
 
@@ -22,7 +26,7 @@ class ClaimVerifier:
 
     def __init__(self, cache_size: int = 500, max_workers: int = 4):
         self.entailmentAnalyzer = EntailmentAnalyzer()
-        self.use_embed = self.entailmentAnalyzer.embedder
+        # self.use_embed = self.entailmentAnalyzer.embedder
         self.claim_cache: Dict[str, Dict] = {}
         self.content_cache: Dict[str, str] = {}
         self.cache_size = cache_size
@@ -55,15 +59,34 @@ class ClaimVerifier:
             return self.domain_weights["neutral"], "neutral"
 
     def _prioritize_sources(self, search_results: List[str]) -> List[str]:
-        """Prioritize trusted sources if we have enough of them."""
+        """Prioritize trusted sources and filter out PDFs/downloads."""
+        # First, filter out PDFs and download links
+        filtered_results = []
+        pdf_count = 0
+
+        for url in search_results:
+            if _is_pdf_or_download_url(url):
+                pdf_count += 1
+                logging.info(f"📄 Filtered out PDF/download URL: {url}")
+                continue
+            filtered_results.append(url)
+
+        if pdf_count > 0:
+            logging.info(f"🚫 Filtered out {pdf_count} PDF/download URLs")
+
+        if not filtered_results:
+            logging.warning("⚠️ No valid URLs remaining after filtering PDFs/downloads")
+            return []
+
+        # Then prioritize trusted sources
         trusted_sources = [
             url
-            for url in search_results
+            for url in filtered_results
             if self._get_domain_weight(url)[1] == "trusted"
         ]
         other_sources = [
             url
-            for url in search_results
+            for url in filtered_results
             if self._get_domain_weight(url)[1] != "trusted"
         ]
 
@@ -72,45 +95,59 @@ class ClaimVerifier:
         else:
             return (trusted_sources + other_sources)[:8]
 
-    def _extract_relevant_sentences(
-        self, content: str, claim: str, top_k: int = 5
-    ) -> List[str]:
-        """Extract the most relevant sentences from content for claim verification."""
-        if not content or len(content.strip()) < 50:
-            return []
+    def _is_valid_sentence(self, sentence: str) -> bool:
+        """Enhanced sentence validation to filter out garbled/corrupted text."""
+        sentence = sentence.strip()
 
-        sentences = sent_tokenize(content)
+        # Basic length check
+        if len(sentence) < 20 or len(sentence) > 300:
+            return False
 
-        filtered_sentences = [
-            s.strip()
-            for s in sentences
-            if 20 < len(s.strip()) < 300 and not self._is_noise_sentence(s)
-        ]
+        # Check for too many non-ASCII characters (garbled text indicator)
+        non_ascii_count = sum(1 for c in sentence if ord(c) > 127)
+        if non_ascii_count > len(sentence) * 0.3:  # More than 30% non-ASCII
+            return False
 
-        if not filtered_sentences:
-            return []
+        # Check for excessive special characters or symbols
+        special_chars = sum(
+            1 for c in sentence if c in string.punctuation and c not in ".,!?;:"
+        )
+        if special_chars > len(sentence) * 0.2:  # More than 20% special chars
+            return False
 
-        if len(filtered_sentences) <= top_k:
-            return filtered_sentences
+        # Enhanced check for random character patterns (PDF corruption indicators)
+        if re.search(r"[^\w\s]{3,}", sentence):  # 3+ consecutive non-word chars
+            return False
 
-        try:
-            # Use the USE Lite embedder's encode_sentence method
-            claim_embedding = self.use_embed.encode_sentence(claim)
+        # Check for PDF-specific corruption patterns
+        if re.search(r"(endstream|endobj|obj\s*<|stream\s+H)", sentence, re.IGNORECASE):
+            return False
 
-            # Use the USE Lite embedder's encode_sentences method for batch processing
-            sentence_embeddings = self.use_embed.encode_sentences(filtered_sentences)
+        # Check for excessive whitespace or control characters
+        if re.search(r"\s{3,}", sentence) or any(
+            ord(c) < 32 and c not in "\t\n\r" for c in sentence
+        ):
+            return False
 
-            # Calculate similarities - expand claim embedding to match sentence embeddings shape
-            claim_embedding_expanded = np.expand_dims(claim_embedding, axis=0)
-            similarities = np.inner(
-                claim_embedding_expanded, sentence_embeddings
-            ).flatten()
+        # Check for minimum word count and average word length
+        words = sentence.split()
+        if len(words) < 4:
+            return False
 
-            top_indices = np.argsort(similarities)[-top_k:][::-1]
-            return [filtered_sentences[i] for i in top_indices]
-        except Exception as e:
-            logging.error(f"Error in sentence ranking: {e}")
-            return filtered_sentences[:top_k]
+        # Check for reasonable word lengths (avoid strings like "a b c d e f g")
+        avg_word_length = sum(len(word) for word in words) / len(words)
+        if avg_word_length < 2.5:
+            return False
+
+        # Check for excessive capitalization
+        if sum(1 for c in sentence if c.isupper()) > len(sentence) * 0.5:
+            return False
+
+        # Check for sequences that look like corrupted encoding
+        if re.search(r"[^\w\s]{5,}", sentence):
+            return False
+
+        return True
 
     def _is_noise_sentence(self, sentence: str) -> bool:
         """Check if a sentence is likely noise (navigation, ads, etc.)."""
@@ -122,9 +159,90 @@ class ClaimVerifier:
             r"^(home|about|contact|menu|search)",
             r"(javascript|enable|browser|update)",
             r"^[\W\d\s]*$",
+            r"(share|like|comment|subscribe)",
+            r"(login|sign\s+in|register)",
+            r"(loading|please\s+wait)",
+            # Add PDF-specific noise patterns
+            r"(pdf|download|file|document)\s*(viewer|reader)",
+            r"(page|pages)\s*\d+\s*(of|\/)\s*\d+",
+            r"(adobe|acrobat|reader)",
         ]
         sentence_lower = sentence.lower()
         return any(re.search(pattern, sentence_lower) for pattern in noise_patterns)
+
+    def _extract_relevant_sentences_tfidf(
+        self, content: str, claim: str, top_k: int = 5
+    ) -> List[str]:
+        """Extract relevant sentences using TF-IDF vectorization."""
+        if not content or len(content.strip()) < 50:
+            return []
+
+        # Check if content appears to be corrupted PDF
+        if _is_corrupted_pdf_content(content):
+            logging.warning("🚫 Content appears to be corrupted PDF - skipping")
+            return []
+
+        sentences = sent_tokenize(content)
+
+        # Enhanced filtering pipeline
+        valid_sentences = []
+        for sentence in sentences:
+            if self._is_valid_sentence(sentence) and not self._is_noise_sentence(
+                sentence
+            ):
+                valid_sentences.append(sentence.strip())
+
+        if not valid_sentences:
+            logging.warning("No valid sentences found after filtering")
+            return []
+
+        if len(valid_sentences) <= top_k:
+            return valid_sentences
+
+        try:
+            # Prepare documents for TF-IDF
+            documents = [claim] + valid_sentences
+
+            # Create TF-IDF vectorizer with appropriate parameters
+            vectorizer = TfidfVectorizer(
+                stop_words="english",
+                max_features=5000,
+                ngram_range=(1, 2),  # Include bigrams for better context
+                min_df=1,
+                max_df=0.95,
+                lowercase=True,
+                strip_accents="unicode",
+            )
+
+            # Fit and transform documents
+            tfidf_matrix = vectorizer.fit_transform(documents)
+
+            # Get claim vector (first document)
+            claim_vector = tfidf_matrix[0]
+
+            # Get sentence vectors (rest of documents)
+            sentence_vectors = tfidf_matrix[1:]
+
+            # Calculate cosine similarities
+            similarities = cosine_similarity(claim_vector, sentence_vectors).flatten()
+
+            # Get top k most similar sentences
+            top_indices = np.argsort(similarities)[-top_k:][::-1]
+
+            # Return sentences with their similarity scores for debugging
+            selected_sentences = []
+            for idx in top_indices:
+                if similarities[idx] > 0.05:  # Minimum similarity threshold
+                    selected_sentences.append(valid_sentences[idx])
+
+            logging.info(
+                f"TF-IDF selected {len(selected_sentences)} relevant sentences"
+            )
+            return selected_sentences if selected_sentences else valid_sentences[:top_k]
+
+        except Exception as e:
+            logging.error(f"Error in TF-IDF sentence ranking: {e}")
+            return valid_sentences[:top_k]
 
     def _get_user_agent(self) -> str:
         ua = self.user_agents[self.current_ua_index]
@@ -150,7 +268,7 @@ class ClaimVerifier:
         if not sentences or not (
             self.entailmentAnalyzer.interpreter and self.entailmentAnalyzer.embedder
         ):
-            return 0.1
+            return 0.3
 
         best_score = 0.0
         entailment_count = 0
@@ -160,8 +278,8 @@ class ClaimVerifier:
                 nli_prediction = self.entailmentAnalyzer.predict_nli_tflite(
                     claim, sentence
                 )
-                score_map = {"Entailment": 0.95, "Neutral": 0.3, "Contradiction": 0.2}
-                score = score_map.get(nli_prediction, 0.1)
+                score_map = {"Entailment": 0.95, "Neutral": 0.4, "Contradiction": 0.1}
+                score = score_map.get(nli_prediction, 0.4)
 
                 if score > best_score:
                     best_score = score
@@ -173,8 +291,10 @@ class ClaimVerifier:
                 logging.error(f"Error analyzing sentence: {e}")
                 continue
 
-        if entailment_count > 1:
-            best_score = min(0.98, best_score * 1.1)
+        if entailment_count >= 1:
+            best_score = min(1, best_score * 1.1)
+        else:
+            best_score = min(1, best_score)
 
         return best_score
 
@@ -189,6 +309,17 @@ class ClaimVerifier:
             return cached_result
 
         prioritized_sources = self._prioritize_sources(search_results)
+
+        if not prioritized_sources:
+            logging.warning("⚠️ No valid sources available after filtering")
+            return {
+                "score": 0.3,
+                "total_sources_processed": 0,
+                "support_sum": 0.0,
+                "total_weight": 0.0,
+                "source_details": [],
+                "warning": "No valid sources available after filtering PDFs/downloads",
+            }
 
         support_scores = []
         total_weight = 0.0
@@ -219,7 +350,7 @@ class ClaimVerifier:
                             )
 
                             total_weight += domain_weight
-                            if similarity_score >= 0.5:
+                            if similarity_score >= 0.4:
                                 support_scores.append(similarity_score * domain_weight)
 
                             source_details.append(
@@ -267,6 +398,11 @@ class ClaimVerifier:
         self, url: str, claim: str
     ) -> Optional[Tuple[float, float, str, List[str]]]:
         try:
+            # Double-check for PDFs at analysis time (in case some slipped through)
+            if _is_pdf_or_download_url(url):
+                logging.info(f"🚫 Skipping PDF/download URL at analysis time: {url}")
+                return None
+
             cache_key = self._cache_key(url)
             content = extract_content(
                 url,
@@ -280,7 +416,13 @@ class ClaimVerifier:
             if not content or len(content.strip()) < 50:
                 return None
 
-            relevant_sentences = self._extract_relevant_sentences(content, claim)
+            # Check for corrupted PDF content
+            if _is_corrupted_pdf_content(content):
+                logging.warning(f"🚫 Skipping corrupted PDF content from: {url}")
+                return None
+
+            # Use TF-IDF for sentence extraction instead of embeddings
+            relevant_sentences = self._extract_relevant_sentences_tfidf(content, claim)
 
             if not relevant_sentences:
                 return None
