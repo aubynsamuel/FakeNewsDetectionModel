@@ -10,7 +10,7 @@ from nltk.tokenize import sent_tokenize
 
 from deploy.utils.general_utils import TRUSTED_DOMAINS, SUSPICIOUS_DOMAINS
 from deploy.utils.content_extractor import extract_content
-from deploy.utils.entailment_analyzer import EntailmentAnalyzer
+from deploy.utils.entailment_analyzer_USE_lite import EntailmentAnalyzer
 
 warnings.filterwarnings("ignore")
 
@@ -94,9 +94,18 @@ class ClaimVerifier:
             return filtered_sentences
 
         try:
-            claim_embedding = self.use_embed([claim])
-            sentence_embeddings = self.use_embed(filtered_sentences)
-            similarities = np.inner(claim_embedding, sentence_embeddings).flatten()
+            # Use the USE Lite embedder's encode_sentence method
+            claim_embedding = self.use_embed.encode_sentence(claim)
+
+            # Use the USE Lite embedder's encode_sentences method for batch processing
+            sentence_embeddings = self.use_embed.encode_sentences(filtered_sentences)
+
+            # Calculate similarities - expand claim embedding to match sentence embeddings shape
+            claim_embedding_expanded = np.expand_dims(claim_embedding, axis=0)
+            similarities = np.inner(
+                claim_embedding_expanded, sentence_embeddings
+            ).flatten()
+
             top_indices = np.argsort(similarities)[-top_k:][::-1]
             return [filtered_sentences[i] for i in top_indices]
         except Exception as e:

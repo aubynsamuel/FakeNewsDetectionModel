@@ -6,7 +6,9 @@ import tensorflow_hub as hub
 
 OUTPUT_DIR = "models"
 TFLITE_MODEL_PATH = os.path.join(OUTPUT_DIR, "nli_predictor_model.tflite")
-USE_MODEL_URL = "https://tfhub.dev/google/universal-sentence-encoder/4"  # replace with local path if necessary
+USE_MODEL_URL = (
+    "C:/universal-sentence-encoder-tensorflow2-universal-sentence-encoder-v2"
+)
 SNLI_LABELS = {0: "Entailment", 1: "Neutral", 2: "Contradiction"}
 
 

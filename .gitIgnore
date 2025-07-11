@@ -2,3 +2,6 @@
 .venv
 venv
 **/__pycache__/
+universal-sentence-encoder-tensorflow1-lite-v2
+snli_1.0_dev.jsonl
+clickbait_embeddings_scatter.py
