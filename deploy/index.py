@@ -185,10 +185,10 @@ class FakeNewsDetector:
             confidence = "Moderate"
         elif final_score >= 0.30:
             verdict = "Doubtful — Weak or Biased Evidence"
-            confidence = "High"
+            confidence = "Low"
         else:
             verdict = "False or Misleading — No Basis Found"
-            confidence = "Very High"
+            confidence = "Very Low"
 
         return final_score, verdict, confidence
 

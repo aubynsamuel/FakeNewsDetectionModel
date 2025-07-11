@@ -1,9 +1,9 @@
 {
-  "build": "python build.py",
-  "install_dependencies": "pip install -r requirements.txt",
   "train_clickbait_checker": "python -m models_training.clickbait_model_trainer",
   "test_clickbait_model": "python -m deploy.main.predict_clickbait",
+  "test_nli_predictor": "python -m deploy.utils.entailment_analyzer_USE_lite",
   "main": "python -m deploy.index",
-  "deploy": "python -m server.app",
-  "nli_tester": "python -m deploy.utils.debertaflow_inference"
+  "install_dependencies": "pip install -r requirements.txt",
+  "build": "python build.py",
+  "deploy": "python -m server.app"
 }

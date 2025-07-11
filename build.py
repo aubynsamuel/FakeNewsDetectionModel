@@ -1,9 +1,8 @@
 import gc
 
-import tensorflow_hub as hub
+# import tensorflow_hub as hub
 import nltk
 
-gc.collect()
 try:
     nltk.data.find("tokenizers/punkt")
     nltk.data.find("tokenizers/punkt_tab")
@@ -11,6 +10,8 @@ except LookupError:
     nltk.download("punkt")
     nltk.download("punkt_tab")
 
-USE_MODEL_URL = "https://tfhub.dev/google/universal-sentence-encoder/4"
+gc.collect()
 
-use_model = hub.load(USE_MODEL_URL)
+# USE_MODEL_URL = "https://tfhub.dev/google/universal-sentence-encoder/4" # we are now using USE lite
+
+# use_model = hub.load(USE_MODEL_URL)

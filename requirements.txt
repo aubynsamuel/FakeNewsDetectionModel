@@ -8,3 +8,12 @@ Flask==3.1.1
 newspaper3k
 lxml_html_clean
 nltk==3.9.1
+tensorflow-hub==0.16.1
+tensorflow==2.18.0
+
+# for training, uncomment to download training dependencies
+# tensorflow-datasets==4.9.9
+# sentencepiece==0.2.0
+# scikit-learn==1.6.1
+# torch==2.7.1+cu118
+# sentence-transformers==4.1.0
