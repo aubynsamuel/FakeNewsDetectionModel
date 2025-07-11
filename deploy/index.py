@@ -16,8 +16,6 @@ from deploy.main.source_credibility_analyzer import SourceCredibilityAnalyzer
 from deploy.utils.general_utils import extract_domain
 from deploy.main.predict_clickbait import ClickbaitPredictor
 
-gc.collect()
-
 
 class FakeNewsDetector:
     """Main enhanced fact checker with ML integration"""
@@ -163,10 +161,10 @@ class FakeNewsDetector:
     ) -> Tuple[float, str, str]:
         """Calculates the final weighted score and determines the verdict."""
         weights = {
+            "source_credibility": 0.35,
             "claim_verification": 0.30,
-            "source_credibility": 0.30,
             "clickbait_detection": 0.20,
-            "network_propagation": 0.20,
+            "network_propagation": 0.15,
         }
 
         final_score = sum(
@@ -350,6 +348,7 @@ class FakeNewsDetector:
         }
 
         # self._print_summary(analysis_results)
+        gc.collect()
         return analysis_results
 
 

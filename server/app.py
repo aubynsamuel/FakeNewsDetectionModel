@@ -3,8 +3,6 @@ from flask import Flask, render_template, request, jsonify
 
 from deploy.index import FakeNewsDetector
 
-gc.collect()
-
 app = Flask(__name__)
 
 analyzer = FakeNewsDetector()

@@ -35,9 +35,9 @@ class ClaimVerifier:
         self.suspicious_domains = SUSPICIOUS_DOMAINS
         self.domain_weights = {"trusted": 2.0, "suspicious": 0.3, "neutral": 1.0}
         self.user_agents = [
+            "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
             "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-            "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/117.0",
             "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Safari/605.1.15",
             "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1",
@@ -278,7 +278,7 @@ class ClaimVerifier:
                 nli_prediction = self.entailmentAnalyzer.predict_nli_tflite(
                     claim, sentence
                 )
-                score_map = {"Entailment": 0.95, "Neutral": 0.4, "Contradiction": 0.1}
+                score_map = {"Entailment": 0.95, "Neutral": 0.3, "Contradiction": 0.1}
                 score = score_map.get(nli_prediction, 0.4)
 
                 if score > best_score:
@@ -350,8 +350,8 @@ class ClaimVerifier:
                             )
 
                             total_weight += domain_weight
-                            if similarity_score >= 0.4:
-                                support_scores.append(similarity_score * domain_weight)
+                            # if similarity_score >= 0.4:
+                            support_scores.append(similarity_score * domain_weight)
 
                             source_details.append(
                                 {
