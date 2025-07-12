@@ -28,10 +28,10 @@ class ClickbaitDetectorTrainer:
         current_script_dir = os.path.dirname(os.path.abspath(__file__))
         project_root_dir = os.path.dirname(current_script_dir)
         clickbait_csv_path = os.path.join(
-            project_root_dir, "data", "clickbait_data.csv"
+            project_root_dir, "data", "clickbait_derived_labels.csv"
         )
         non_clickbait_csv_path = os.path.join(
-            project_root_dir, "data", "non_clickbait_data.csv"
+            project_root_dir, "data", "non_clickbait_derived_labels.csv"
         )
 
         try:
