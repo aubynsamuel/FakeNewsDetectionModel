@@ -137,7 +137,9 @@ function displayResults(data) {
     config.color
   };"></i>
           <div>
-              <h2 style="color: ${config.color};">${verdict}</h2>
+              <h2 style="color: ${
+                config.color
+              };" class="verdict-header">${verdict}</h2>
               <p> <strong>Score:</strong> ${score.toFixed(2)}/1.00</p>
           </div>
       </div>
@@ -169,3 +171,12 @@ function displayError(message) {
       </div>
   `;
 }
+
+// Allow Enter key to submit
+document
+  .getElementById("headline")
+  .addEventListener("keydown", function (event) {
+    if (event.key === "Enter" && event.ctrlKey) {
+      analyzeHeadline();
+    }
+  });
