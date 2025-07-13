@@ -46,6 +46,7 @@ TRUSTED_DOMAINS = {
     "starrfm.com.gh",
     "thebftonline.com",
     "yen.com.gh",
+    "nsmq.com.gh",
     # ⚽ Sports News
     "cbssports.com",
     "espn.com",

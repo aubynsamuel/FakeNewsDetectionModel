@@ -42,6 +42,7 @@ body {
 }
 
 .header {
+  height: 2.5rem;
   text-align: center;
   padding: 0.5rem;
   display: flex;
@@ -52,10 +53,11 @@ body {
 .logo {
   font-size: 1.5rem;
   color: var(--primary-color);
-  margin-bottom: 0.5rem;
   display: flex;
   flex-direction: row;
-  gap: 20px;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
 }
 
 h1 {
@@ -239,6 +241,7 @@ input:checked + .slider:before {
   font-size: 0.9rem;
   color: #7f8c8d;
   margin-bottom: 5px;
+  text-transform: capitalize;
 }
 
 [data-theme="dark"] .metric-label {
@@ -276,6 +279,7 @@ input:checked + .slider:before {
 }
 
 .footer {
+  height: 2.5rem;
   padding: 10px;
   color: #7f8c8d;
   align-content: center;
@@ -297,7 +301,7 @@ input:checked + .slider:before {
   color: #bdc3c7;
 }
 .main-body {
-  min-height: 80vh;
+  min-height: calc(100dvh - 5rem);
   width: 100%;
   justify-content: center;
   align-content: center;
@@ -305,4 +309,34 @@ input:checked + .slider:before {
   /* remove horizontal paddings on small screens */
   padding-left: 90px;
   padding-right: 90px;
+}
+
+@media screen and (max-width: 768px) {
+  .main-body {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+  .logo {
+    font-size: 1.2rem;
+  }
+  .header h5 {
+    font-size: 1.25rem;
+  }
+  .analyze-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  .metrics-explanation li {
+    flex-direction: column;
+    text-align: center;
+  }
+  .verdict-header {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+  .metric-value {
+    font-size: 1.4rem;
+    font-weight: 700;
+  }
 }
