@@ -1,8 +1,8 @@
-import gc
 import os
 
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
+import gc
 import time
 import random
 from datetime import datetime
@@ -15,8 +15,6 @@ from deploy.main.network_analyzer import NetworkAnalyzer
 from deploy.main.source_credibility_analyzer import SourceCredibilityAnalyzer
 from deploy.utils.general_utils import extract_domain
 from deploy.main.predict_clickbait import ClickbaitPredictor
-
-gc.collect()
 
 
 class FakeNewsDetector:
@@ -163,10 +161,10 @@ class FakeNewsDetector:
     ) -> Tuple[float, str, str]:
         """Calculates the final weighted score and determines the verdict."""
         weights = {
-            "claim_verification": 0.30,
-            "source_credibility": 0.30,
-            "clickbait_detection": 0.25,
-            "network_propagation": 0.15,
+            "source_credibility": 0.35,
+            "claim_verification": 0.35,
+            "network_propagation": 0.20,
+            "clickbait_detection": 0.10,
         }
 
         final_score = sum(
@@ -185,10 +183,10 @@ class FakeNewsDetector:
             confidence = "Moderate"
         elif final_score >= 0.30:
             verdict = "Doubtful — Weak or Biased Evidence"
-            confidence = "High"
+            confidence = "Low"
         else:
             verdict = "False or Misleading — No Basis Found"
-            confidence = "Very High"
+            confidence = "Very Low"
 
         return final_score, verdict, confidence
 
@@ -350,6 +348,7 @@ class FakeNewsDetector:
         }
 
         # self._print_summary(analysis_results)
+        gc.collect()
         return analysis_results
 
 
