@@ -11,8 +11,6 @@ import string
 from deploy.utils.general_utils import TRUSTED_DOMAINS, SUSPICIOUS_DOMAINS
 from deploy.utils.content_extractor import extract_content
 from deploy.utils.url_filter import _is_corrupted_pdf_content, _is_pdf_or_download_url
-
-# from entailment_analyzer import predict_entailment_label
 from semantic_similarity import semantic_similarity
 
 warnings.filterwarnings("ignore")

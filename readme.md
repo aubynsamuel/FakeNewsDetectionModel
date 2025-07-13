@@ -67,24 +67,3 @@ def analyze_propagation_pattern(urls: List[str]) -> Dict:
     #     "domain_diversity": float (percentage of unique domains)
     # }
 ```
-
-Detailed Classification Report:
-precision recall f1-score support
-
-Entailment 0.8185 0.8394 0.8288 3368
-Neutral 0.7714 0.7537 0.7624 3219
-Contradiction 0.8326 0.8295 0.8310 3237
-
-accuracy 0.8080 9824
-
-macro avg 0.8075 0.8075 0.8074 9824
-
-weighted avg 0.8077 0.8080 0.8078 9824
-
-## dependencies
-
-tensorflow universal-sentence-encoder -> **./deploy/main/claim_verifier.py and ./deploy/utils/debertaflow_inference.py**
-
-clickbait_predictor(custom from scratch) **./models/clickbait/** -> **"./deploy/main/predict_clickbait.py"**
-
-nli_predictor_model(distilled from "cross-encoder/nli-deberta-v3-small") **"./models/"** -> **./deploy/utils/debertaflow_inference.py**

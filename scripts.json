@@ -1,7 +1,6 @@
 {
   "train_clickbait_checker": "python -m models_training.clickbait_model_trainer",
   "test_clickbait_model": "python -m deploy.main.predict_clickbait",
-  "test_nli_predictor": "python -m deploy.utils.entailment_analyzer_USE_lite",
   "main": "python -m deploy.index",
   "install_dependencies": "pip install -r requirements.txt",
   "build": "python build.py",
