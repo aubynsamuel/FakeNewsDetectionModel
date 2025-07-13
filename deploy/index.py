@@ -1,8 +1,8 @@
-import gc
 import os
 
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
+import gc
 import time
 import random
 from datetime import datetime
@@ -10,7 +10,7 @@ from typing import Dict, List, Tuple, Any
 import numpy as np
 from googlesearch import search
 
-from deploy.main.claim_verifier_USE_lite import ClaimVerifier
+from deploy.main.claim_verifier import ClaimVerifier
 from deploy.main.network_analyzer import NetworkAnalyzer
 from deploy.main.source_credibility_analyzer import SourceCredibilityAnalyzer
 from deploy.utils.general_utils import extract_domain
@@ -162,9 +162,9 @@ class FakeNewsDetector:
         """Calculates the final weighted score and determines the verdict."""
         weights = {
             "source_credibility": 0.35,
-            "claim_verification": 0.30,
-            "clickbait_detection": 0.20,
-            "network_propagation": 0.15,
+            "claim_verification": 0.35,
+            "network_propagation": 0.20,
+            "clickbait_detection": 0.10,
         }
 
         final_score = sum(
