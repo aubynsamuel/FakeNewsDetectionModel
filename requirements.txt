@@ -8,3 +8,7 @@ Flask==3.1.1
 newspaper3k
 lxml_html_clean
 nltk==3.9.1
+sentence-transformers==4.1.0
+torch==2.7.1
+scikit-learn==1.6.1
+textblob==0.19.0

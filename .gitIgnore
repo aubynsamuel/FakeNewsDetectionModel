@@ -2,3 +2,4 @@
 .venv
 venv
 **/__pycache__/
+snli_1.0_dev.jsonl

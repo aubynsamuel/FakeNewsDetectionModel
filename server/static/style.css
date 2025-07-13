@@ -31,29 +31,31 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-height: 100vh;
-  padding: 2rem;
 }
 
 .container {
   width: 100%;
-  max-width: 800px;
   background-color: var(--container-bg);
-  padding: 2.5rem;
-  border-radius: var(--border-radius);
-  box-shadow: var(--box-shadow);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .header {
   text-align: center;
-  margin-bottom: 2.5rem;
-  position: relative;
+  padding: 0.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .logo {
-  font-size: 3rem;
+  font-size: 1.5rem;
   color: var(--primary-color);
   margin-bottom: 0.5rem;
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
 }
 
 h1 {
@@ -63,7 +65,6 @@ h1 {
 }
 
 .header p {
-  font-size: 1.1rem;
   color: #7f8c8d;
 }
 
@@ -72,12 +73,12 @@ h1 {
 }
 
 .theme-switcher {
-  position: absolute;
   top: 0;
   right: 0;
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  font-size: 1.2rem;
 }
 
 .switch {
@@ -149,9 +150,8 @@ input:checked + .slider:before {
 }
 
 .analyze-btn {
-  width: 100%;
-  padding: 1rem;
-  font-size: 1.2rem;
+  padding: 0.5rem;
+  font-size: 1rem;
   font-weight: 600;
   background-color: var(--primary-color);
   color: #fff;
@@ -162,10 +162,17 @@ input:checked + .slider:before {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
+  margin-top: 20px;
+  right: 0px;
 }
 
 .analyze-btn:hover {
   background-color: #2980b9;
+}
+.analyze-btn-container {
+  display: flex;
+  width: 100%;
+  justify-content: end;
 }
 
 .loading {
@@ -269,11 +276,33 @@ input:checked + .slider:before {
 }
 
 .footer {
-  margin-top: 2rem;
-  text-align: center;
+  padding: 10px;
   color: #7f8c8d;
+  align-content: center;
+  text-align: center;
 }
 
 [data-theme="dark"] .footer {
   color: #bdc3c7;
+}
+
+.teaser-message {
+  font-size: 1.1rem;
+  color: #7f8c8d;
+  text-align: center;
+  margin: 20px;
+}
+
+[data-theme="dark"] .teaser-message {
+  color: #bdc3c7;
+}
+.main-body {
+  min-height: 80vh;
+  width: 100%;
+  justify-content: center;
+  align-content: center;
+  padding-bottom: 10px;
+  /* remove horizontal paddings on small screens */
+  padding-left: 90px;
+  padding-right: 90px;
 }
