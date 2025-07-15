@@ -1,10 +1,12 @@
 from flask import Flask, render_template, request, jsonify
 
-from deploy.index import FakeNewsDetector
+# from deploy.index import FakeNewsDetector # uncomment if running locally
+
+from gradio_client import Client  # comment out if running locally
 
 app = Flask(__name__)
 
-analyzer = FakeNewsDetector()
+# analyzer = FakeNewsDetector()   # uncomment if running locally
 
 
 @app.route("/")
@@ -27,7 +29,13 @@ def analyze():
             )
 
         # Analyze the headline
-        result = analyzer.comprehensive_verify(headline)
+
+        # uncomment if running locally
+        # result = analyzer.comprehensive_verify(headline)
+
+        # comment out if running locally
+        client = Client("aubynsamuel05/nli_checks")
+        result = client.predict(raw_headline=headline, api_name="/predict")
 
         return result
 
@@ -36,4 +44,4 @@ def analyze():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    app.run(debug=False, host="0.0.0.0", port=5000)

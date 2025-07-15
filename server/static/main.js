@@ -111,7 +111,7 @@ function displayResults(data) {
     metricsHTML += `
           <div class="metric">
               <div class="metric-value" style="color: ${
-                value >= 0.6 ? "#27ae60" : "#e74c3c"
+                value >= 0.5 ? "#27ae60" : "#e74c3c"
               }">${value}</div>
               <div class="metric-label">${key.replace(/_/g, " ")}</div>
           </div>
