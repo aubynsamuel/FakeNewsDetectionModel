@@ -11,7 +11,7 @@ import string
 from deploy.utils.general_utils import TRUSTED_DOMAINS, SUSPICIOUS_DOMAINS
 from deploy.utils.content_extractor import extract_content
 from deploy.utils.url_filter import _is_corrupted_pdf_content, _is_pdf_or_download_url
-from semantic_similarity import semantic_similarity
+from semantic_similarity import calculate_semantic_similarity
 
 warnings.filterwarnings("ignore")
 
@@ -208,12 +208,10 @@ class ClaimVerifier:
     def _get_from_cache(self, key: str) -> Optional[Dict]:
         return self.claim_cache.get(key)
 
-    def _semantic_similarity_with_sentences(
-        self, claim: str, sentences: List[str]
-    ) -> float:
+    def _semantic_similarity_with_sentences(self, claim: str, sentences: str) -> float:
         """Calculate entailment scores and return the best one."""
         try:
-            score = semantic_similarity(claim, sentences)
+            score = calculate_semantic_similarity(claim, sentences)
         except Exception as e:
             logging.error(f"Error analyzing sentence: {e}")
         return score
@@ -260,18 +258,9 @@ class ClaimVerifier:
                                 result
                             )
 
-                            # Enhanced Logging Format
-                            logging.info(f"\nSource: {url} ({domain_type})")
-                            logging.info(
-                                f"  - Relevant Sentences: {sentences[:3]}"
-                            )  # Log first 2 sentences
-                            logging.info(
-                                f"  - Entailment Score: {similarity_score:.2f}"
-                            )
-
                             total_weight += domain_weight
-                            # if similarity_score >= 0.4:
-                            support_scores.append(similarity_score * domain_weight)
+                            if similarity_score >= 0.4:
+                                support_scores.append(similarity_score * domain_weight)
 
                             source_details.append(
                                 {
@@ -282,6 +271,10 @@ class ClaimVerifier:
                                     "relevant_sentences": sentences[:3],
                                 }
                             )
+
+                            for source_detail in source_details:
+                                logging.info(f"Source Details:\n{source_detail}\n")
+
                     except Exception as e:
                         logging.error(f"Error processing {url}: {e}")
             except TimeoutError:
@@ -292,10 +285,10 @@ class ClaimVerifier:
         if total_weight > 0:
             final_score = min(1.0, support_sum / total_weight)
             # Adjustments
-            if final_score < 0.5 and support_sum < 0.5:
-                final_score *= 0.8
-            elif final_score > 0.5 and support_sum >= 1.0:
-                final_score = min(0.9, final_score * 1.1)
+            if final_score < 0.5:
+                final_score *= 0.9
+            elif final_score > 0.5:
+                final_score *= 1.1
         else:
             final_score = 0.1
 
@@ -349,17 +342,21 @@ class ClaimVerifier:
 
             cleaned_content = ""
             for sentence in relevant_sentences:
-                if sentence.endswith("." or "?" or "!"):
-                    cleaned_content += sentence
+                if (
+                    sentence.endswith(".")
+                    or sentence.endswith("?")
+                    or sentence.endswith("!")
+                ):
+                    cleaned_content += f"{sentence} "
                 else:
-                    cleaned_content += f"{sentence}."
+                    cleaned_content += f"{sentence}. "
 
             semantic_similarity = self._semantic_similarity_with_sentences(
                 claim, cleaned_content
             )
 
             domain_weight, domain_type = self._get_domain_weight(url)
-            # print(relevant_sentences)
+            # print(f"relevant_sentences: {cleaned_content}")
 
             return semantic_similarity, domain_weight, domain_type, relevant_sentences
         except Exception as e:
