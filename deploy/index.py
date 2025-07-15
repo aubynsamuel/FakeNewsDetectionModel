@@ -16,6 +16,15 @@ from deploy.main.source_credibility_analyzer import SourceCredibilityAnalyzer
 from deploy.utils.general_utils import extract_domain
 from deploy.main.predict_clickbait import ClickbaitPredictor
 
+import nltk
+
+try:
+    nltk.data.find("tokenizers/punkt")
+    nltk.data.find("tokenizers/punkt_tab")
+except LookupError:
+    nltk.download("punkt")
+    nltk.download("punkt_tab")
+
 
 class FakeNewsDetector:
     """Main enhanced fact checker with ML integration"""
