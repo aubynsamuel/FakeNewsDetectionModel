@@ -339,4 +339,13 @@ input:checked + .slider:before {
     font-size: 1.4rem;
     font-weight: 700;
   }
+  textarea::placeholder {
+    font-size: smaller;
+  }
+  .input-group label {
+    font-size: 1rem;
+  }
+  .teaser-message {
+    font-size: 1rem;
+  }
 }
