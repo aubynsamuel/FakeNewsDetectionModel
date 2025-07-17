@@ -16,6 +16,11 @@ def index():
     return render_template("index.html")
 
 
+@app.route("/health")
+def check_health():
+    return jsonify({"health": "server is up and running"})
+
+
 @app.route("/analyze", methods=["POST"])
 def analyze():
     try:
