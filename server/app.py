@@ -1,10 +1,12 @@
 from flask import Flask, render_template, request, jsonify
+from flask_cors import CORS  # Add this
 
 # from deploy.index import FakeNewsDetector # uncomment if running locally
 
 from gradio_client import Client  # comment out if running locally
 
 app = Flask(__name__)
+CORS(app)
 
 # analyzer = FakeNewsDetector()   # uncomment if running locally
 
