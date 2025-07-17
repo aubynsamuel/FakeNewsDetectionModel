@@ -1,4 +1,4 @@
 gradio==5.37.0
 gradio_client==1.10.4
 Flask==3.1.1
-flask-cors-6.0.1
+flask-cors==6.0.1
