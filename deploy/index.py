@@ -147,24 +147,25 @@ class FakeNewsDetector:
             print(f"   ❌ Network analysis error: {e}")
             return {"score": 0.1, "domain_diversity": 0.0}
 
-    def _verify_claim(self, headline: str, search_results: List[str]) -> float:
+    def _verify_claim(self, headline: str, search_results: List[str]) -> Dict[str, Any]:
         """Verifies the claim against the content of the found sources."""
         print("✅ Verifying Claims...")
 
         if not search_results:
             print("   ❌ No search results for claim verification")
-            return 0.4
+            return {"score": 0.3, "source_details": []}
 
         try:
             verification = self.claim_verifier.verify_claim_against_sources(
                 headline, search_results
             )
-            claim_verification_score = self._to_float(verification.get("score", 0.4))
+            claim_verification_score = self._to_float(verification.get("score", 0.3))
+            source_details = verification.get("source_details", [])
             print(f"   '{headline}': {claim_verification_score:.2f}")
-            return claim_verification_score
+            return {"score": claim_verification_score, "source_details": source_details}
         except Exception as e:
             print(f"   ❌ Claim verification error: {e}")
-            return 0.4
+            return {"score": 0.3, "source_details": []}
 
     def _calculate_final_score_and_verdict(
         self, component_scores: Dict[str, float]
@@ -229,6 +230,10 @@ class FakeNewsDetector:
         )
         print(f"   • Domain Diversity: {components['network']['domain_diversity']:.2f}")
 
+        print(
+            f"   • Source Details: {components['claim_verification']['source_details'][0:1]}"
+        )
+
     def comprehensive_verify(
         self, raw_headline: str, results_to_check: int = 8
     ) -> Dict:
@@ -270,7 +275,7 @@ class FakeNewsDetector:
                         "suspicious_count": 0,
                     },
                     "network": {"score": 0.0, "domain_diversity": 0.0},
-                    "claim_verification": {"score": 0.0},
+                    "claim_verification": {"score": 0.0, "source_details": []},
                 },
             }
 
@@ -301,7 +306,7 @@ class FakeNewsDetector:
                         "suspicious_count": 0,
                     },
                     "network": {"score": 0.1, "domain_diversity": 0.0},
-                    "claim_verification": {"score": 0.1},
+                    "claim_verification": {"score": 0.1, "source_details": []},
                 },
             }
 
@@ -311,7 +316,8 @@ class FakeNewsDetector:
             self._analyze_source_credibility(search_results)
         )
         network_analysis = self._analyze_network_propagation(search_results)
-        claim_verification_score = self._verify_claim(raw_headline, search_results)
+        claim_verification_result = self._verify_claim(raw_headline, search_results)
+        claim_verification_score = claim_verification_result["score"]
 
         # Step 3: Consolidate component scores (ensure all are Python floats)
         component_scores = {
@@ -360,7 +366,10 @@ class FakeNewsDetector:
                     "score": round(network_analysis["score"], 2),
                     "domain_diversity": round(network_analysis["domain_diversity"], 2),
                 },
-                "claim_verification": {"score": round(claim_verification_score, 2)},
+                "claim_verification": {
+                    "score": round(claim_verification_score, 2),
+                    "source_details": claim_verification_result["source_details"],
+                },
             },
         }
 

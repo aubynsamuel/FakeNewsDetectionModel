@@ -194,7 +194,6 @@ class ClaimVerifier:
     def _get_user_agent(self) -> str:
         ua = self.user_agents[self.current_ua_index]
         self.current_ua_index = (self.current_ua_index + 1) % len(self.user_agents)
-        print(f"Using User-Agent: {ua}")
         return ua
 
     def _cache_key(self, text: str) -> str:
@@ -278,8 +277,9 @@ class ClaimVerifier:
             except TimeoutError:
                 logging.warning("⏰ Timeout: Some URLs were skipped.")
 
-        for source_detail in source_details:
-            logging.info(f"Source Details:\n{source_detail}\n")
+        # for source_detail in source_details:
+        #     logging.info(f"Source Details:\n{source_detail}\n")
+
         support_sum = sum(support_scores)
 
         if total_weight > 0:
