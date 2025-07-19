@@ -194,6 +194,7 @@ class ClaimVerifier:
     def _get_user_agent(self) -> str:
         ua = self.user_agents[self.current_ua_index]
         self.current_ua_index = (self.current_ua_index + 1) % len(self.user_agents)
+        print(f"Using User-Agent: {ua}")
         return ua
 
     def _cache_key(self, text: str) -> str:
