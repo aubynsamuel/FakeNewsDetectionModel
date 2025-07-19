@@ -272,14 +272,13 @@ class ClaimVerifier:
                                 }
                             )
 
-                            for source_detail in source_details:
-                                logging.info(f"Source Details:\n{source_detail}\n")
-
                     except Exception as e:
                         logging.error(f"Error processing {url}: {e}")
             except TimeoutError:
                 logging.warning("⏰ Timeout: Some URLs were skipped.")
 
+        for source_detail in source_details:
+            logging.info(f"Source Details:\n{source_detail}\n")
         support_sum = sum(support_scores)
 
         if total_weight > 0:

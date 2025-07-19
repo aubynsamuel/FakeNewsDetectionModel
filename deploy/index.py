@@ -35,6 +35,7 @@ class FakeNewsDetector:
             self.claim_verifier = ClaimVerifier()
             self.network_analyzer = NetworkAnalyzer()
             self.clickbait_predictor = ClickbaitPredictor()
+            self.analysis_cache: Dict[str, Dict] = {}
         except Exception as e:
             print(f"❌ Error initializing components: {e}")
             raise
@@ -235,6 +236,13 @@ class FakeNewsDetector:
         Comprehensive fact-checking with ML integration.
         This method orchestrates the analysis by calling various specialized components.
         """
+        if raw_headline in self.analysis_cache:
+            print(f'\n✅ Using Cached Analysis: "{raw_headline}"')
+            print("=" * 80)
+            cached_result = self.analysis_cache[raw_headline]
+            self._print_summary(cached_result)
+            return cached_result
+
         print(f'\n🔎 Comprehensive Analysis: "{raw_headline}"')
         print("=" * 80)
 
@@ -356,7 +364,8 @@ class FakeNewsDetector:
             },
         }
 
-        # self._print_summary(analysis_results)
+        self._print_summary(analysis_results)
+        self.analysis_cache[raw_headline] = analysis_results
         gc.collect()
         return analysis_results
 
