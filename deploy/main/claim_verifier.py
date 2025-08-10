@@ -11,7 +11,9 @@ import string
 from deploy.utils.general_utils import TRUSTED_DOMAINS, SUSPICIOUS_DOMAINS
 from deploy.utils.content_extractor import extract_content
 from deploy.utils.url_filter import _is_corrupted_pdf_content, _is_pdf_or_download_url
-from semantic_similarity import calculate_semantic_similarity
+from nli_checks import advanced_claim_verifier_native
+
+# from semantic_similarity import calculate_semantic_similarity
 
 warnings.filterwarnings("ignore")
 
@@ -211,7 +213,15 @@ class ClaimVerifier:
     def _semantic_similarity_with_sentences(self, claim: str, sentences: str) -> float:
         """Calculate entailment scores and return the best one."""
         try:
-            score = calculate_semantic_similarity(claim, sentences)
+            # score = calculate_semantic_similarity(claim, sentences)
+            result = advanced_claim_verifier_native(claim, sentences)
+            print(f"Support Score: {result['support_score']:.4f}")
+            print(f"Overall Assessment: {result['prediction']} ✅")
+            print("-" * 30)
+            print("Most Relevant Evidence Found:")
+            print(f"-> \"{result['relevant_chunk']}\"")
+            print("\n" + "=" * 50 + "\n")
+            score = result["support_score"]
         except Exception as e:
             logging.error(f"Error analyzing sentence: {e}")
         return score

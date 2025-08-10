@@ -5,7 +5,7 @@ import torch
 from sentence_transformers import SentenceTransformer, util
 from textblob import TextBlob
 
-model = SentenceTransformer("paraphrase-MiniLM-L12-v2")
+model = SentenceTransformer("all-mpnet-base-v2")
 model.eval()
 
 
