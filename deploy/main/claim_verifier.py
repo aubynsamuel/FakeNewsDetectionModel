@@ -30,9 +30,9 @@ class ClaimVerifier:
         self.suspicious_domains = SUSPICIOUS_DOMAINS
         self.domain_weights = {"trusted": 2.0, "suspicious": 0.3, "neutral": 1.0}
         self.user_agents = [
-            "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
             "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+            "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/117.0",
             "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Safari/605.1.15",
             "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1",
@@ -272,13 +272,13 @@ class ClaimVerifier:
                                 }
                             )
 
-                            for source_detail in source_details:
-                                logging.info(f"Source Details:\n{source_detail}\n")
-
                     except Exception as e:
                         logging.error(f"Error processing {url}: {e}")
             except TimeoutError:
                 logging.warning("⏰ Timeout: Some URLs were skipped.")
+
+        # for source_detail in source_details:
+        #     logging.info(f"Source Details:\n{source_detail}\n")
 
         support_sum = sum(support_scores)
 
