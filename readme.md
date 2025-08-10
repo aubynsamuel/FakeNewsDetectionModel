@@ -1,69 +1,31 @@
-# ✅ FakeNewsDetector – Expected Behavior
+# Fake News Detector
 
-This is the **main orchestrator** that coordinates all modules to evaluate a news headline's credibility.
+This system provides a comprehensive analysis of news headlines to determine their likely credibility. It is designed to help users identify potential misinformation by evaluating a headline from multiple perspectives.
 
-## 🔍 Primary Responsibilities
+## Core Functionality
 
-1. **Accept a raw headline (string) as input**
-2. **Run multiple analyses** on the headline using the following sub-components:
-   - Clickbait Detection
-   - Source Credibility Analysis
-   - Claim Verification
-   - Network Propagation Analysis
-3. **Aggregate scores** from these modules using defined weights
-4. **Output a structured dictionary** with:
-   - Final verdict (`Credible`, `Likely True`, `Unclear`, `Doubtful`, `False`)
-   - A numerical credibility score
-   - Confidence level (`Very High`, `High`, etc.)
-   - Breakdown of individual components
+The system takes a news headline as input and processes it through a series of specialized analysis modules. Each module evaluates a different aspect of the headline and its source. The results are then aggregated to produce a final credibility score and a clear verdict.
 
-## 🧩 Dependencies (Expected Responsibilities)
+## Analysis Components
 
-### 1. `AdvancedClickbaitDetector`
+The final verdict is based on a combination of the following analyses:
 
-**Purpose**: Assign a score based on how "clickbait-y" the headline is.
+### 1. Clickbait Detection
 
-**Expected Method**:
+This module examines the language and structure of the headline itself. It identifies patterns commonly used in clickbait—such as sensationalism, emotional manipulation, or intentionally withholding information—to score how "clickbait-y" the headline is. A high clickbait score can indicate that the content is more focused on generating clicks than presenting factual information.
 
-```python
-def detect_clickbait_score(headline: str) -> float:
-    # Returns a float between 0.0 (not clickbait) and 1.0 (extremely clickbait)
-```
+### 2. Source Credibility Analysis
 
-### 2. `SourceCredibilityAnalyzer`
+This component evaluates the trustworthiness of the news source's domain (e.g., `nytimes.com`, `yournews.co`). It checks the domain against databases of known reliable sources, biased publishers, and fake news sites to assess the general reputation of the publisher.
 
-**Purpose**: Evaluate the trustworthiness of a source based on its domain name.
+### 3. Claim Verification
 
-**Expected Method**:
+This module fact-checks the central claim of the headline. It searches the web for other articles, reports, and fact-checking websites that have covered the same topic. By comparing the headline to multiple independent sources, it determines whether the claim is supported by evidence or contradicted by other reports.
 
-```python
-def analyze_domain_credibility(domain: str) -> float:
-    # Returns a float between 0.0 (untrustworthy) and 1.0 (highly trustworthy)
-```
+### 4. Network Propagation Analysis
 
-### 3. `ClaimVerifier`
+This analysis looks at how the story is spreading across the internet. It investigates the diversity and quality of the domains reporting on the story. A credible story is typically picked up by many different and reputable news outlets, while misinformation is often confined to a small network of unreliable sites.
 
-**Purpose**: Compare the input claim/headline against actual web search results and estimate factual agreement.
+## The Final Verdict
 
-**Expected Method**:
-
-```python
-def verify_claim_against_sources(headline: str, urls: List[str]) -> Dict:
-    # Returns a dictionary like:
-    # {"score": float between 0 and 1}
-```
-
-### 4. `NetworkAnalyzer`
-
-**Purpose**: Check how widely and diversely the story is propagated across different domains.
-
-**Expected Method**:
-
-```python
-def analyze_propagation_pattern(urls: List[str]) -> Dict:
-    # Returns a dictionary like:
-    # {
-    #     "score": float between 0 and 1,
-    #     "domain_diversity": float (percentage of unique domains)
-    # }
-```
+By combining the scores from these four modules, the system calculates a final credibility rating. This is presented to the user as a simple verdict, such as `Credible`, `Doubtful`, or `False`, along with a detailed breakdown of each analysis component, giving you a transparent look at why the headline received its rating.
